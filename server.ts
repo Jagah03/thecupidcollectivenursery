@@ -750,6 +750,10 @@ async function startServer() {
   });
 }
 
-startServer().catch((e) => {
-  console.error("Express boot startup crashed:", e);
-});
+if (!process.env.VERCEL) {
+  startServer().catch((e) => {
+    console.error("Express boot startup crashed:", e);
+  });
+}
+
+export default app;
