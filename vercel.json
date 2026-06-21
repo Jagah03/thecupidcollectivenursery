@@ -1,14 +1,22 @@
 {
   "version": 2,
+  "buildCommand": "npm run build",
   "functions": {
-    "api/*.ts": {
+    "api/index.ts": {
       "includeFiles": "data/**"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/index.ts"
+      "src": "/api/(.*)",
+      "dest": "/api/index.ts"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
