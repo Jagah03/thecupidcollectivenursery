@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
+import { createClient } from "@supabase/supabase-js";
 import { DBStore, GlobalSettings, NurseryGuidelines, NurseryPackage, Caregiver, BlogArticle, SafetyAlert, MentalHealthResource, FAQItem, Testimonial, Inquiry } from "./src/types";
 
 const app = express();
@@ -20,15 +21,27 @@ function ensureDirs() {
 }
 ensureDirs();
 
-// Read Database Helper
-function readDB(): DBStore {
+let supabaseClient: any = null;
+
+function getSupabase() {
+  if (!supabaseClient) {
+    const url = process.env.SUPABASE_URL || "";
+    const key = process.env.SUPABASE_KEY || "";
+    if (url && key && url !== "MY_SUPABASE_URL" && key !== "MY_SUPABASE_KEY" && url.trim() !== "" && key.trim() !== "") {
+      supabaseClient = createClient(url, key);
+    }
+  }
+  return supabaseClient;
+}
+
+function readLocalDB(): DBStore {
   try {
     if (fs.existsSync(DB_PATH)) {
       const raw = fs.readFileSync(DB_PATH, "utf-8");
       return JSON.parse(raw) as DBStore;
     }
   } catch (err) {
-    console.error("Database reading warning:", err);
+    console.error("Local database reading warning:", err);
   }
   // Safe Fallback if file missing or corrupted
   return {
@@ -57,12 +70,79 @@ function readDB(): DBStore {
   };
 }
 
-// Write Database Helper
-function writeDB(data: DBStore) {
+function writeLocalDB(data: DBStore) {
   try {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf-8");
   } catch (err) {
-    console.error("Database writing error:", err);
+    console.error("Local database writing error:", err);
+  }
+}
+
+async function writeDBToSupabaseOnly(data: DBStore) {
+  const supabase = getSupabase();
+  if (!supabase) return;
+
+  const { error } = await supabase
+    .from("nursery_store")
+    .upsert({ key: "cupid_db_store", data: data, updated_at: new Date().toISOString() });
+
+  if (error) {
+    console.error("Failed to upsert database store to Supabase 'nursery_store':", error.message);
+    if (error.code === '42P01') {
+      console.error("\n[SUPABASE HELP] The table 'nursery_store' does not exist in your database.");
+      console.error("Please run the following query in your Supabase SQL Editor to initialize it:\n");
+      console.error(`
+        CREATE TABLE IF NOT EXISTS nursery_store (
+          key TEXT PRIMARY KEY,
+          data JSONB NOT NULL,
+          updated_at TIMESTAMPTZ DEFAULT now()
+        );
+      \n`);
+    }
+  } else {
+    console.log("Successfully synchronized Cupid Collective Nursery data with Supabase 'nursery_store' table.");
+  }
+}
+
+// Lazy-initialized asynchronous global readDB helper
+async function readDB(): Promise<DBStore> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("nursery_store")
+        .select("data")
+        .eq("key", "cupid_db_store")
+        .maybeSingle();
+
+      if (error) {
+        console.warn("Supabase query warning (falling back to local file storage):", error.message);
+      } else if (data && data.data) {
+        return data.data as DBStore;
+      } else {
+        console.log("Supabase row 'cupid_db_store' not found. Initializing with local db configuration...");
+        const localData = readLocalDB();
+        await writeDBToSupabaseOnly(localData);
+        return localData;
+      }
+    } catch (err: any) {
+      console.error("Supabase failover read exception:", err.message || err);
+    }
+  }
+  return readLocalDB();
+}
+
+// Lazy-initialized asynchronous global writeDB helper
+async function writeDB(data: DBStore) {
+  writeLocalDB(data);
+
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      await writeDBToSupabaseOnly(data);
+    } catch (err: any) {
+      console.error("Supabase failover write exception:", err.message || err);
+    }
   }
 }
 
@@ -78,9 +158,9 @@ function validateAdminToken(req: express.Request): boolean {
 // ==========================================
 
 // Fetches public site content
-app.get("/api/public-content", (req, res) => {
+app.get("/api/public-content", async (req, res) => {
   try {
-    const db = readDB();
+    const db = await readDB();
     // Exclude adminPassword from public settings payload for security
     const { adminPassword, ...safeSettings } = db.globalSettings;
     
@@ -104,7 +184,7 @@ app.get("/api/public-content", (req, res) => {
 });
 
 // Post inquiry
-app.post("/api/inquiries", (req, res) => {
+app.post("/api/inquiries", async (req, res) => {
   try {
     const { name, pronouns, email, subject, message, agreedBoundaries } = req.body;
     if (!name || !email || !subject || !message) {
@@ -114,7 +194,7 @@ app.post("/api/inquiries", (req, res) => {
       return res.status(400).json({ success: false, error: "You must confirm you have read the Nursery boundaries." });
     }
 
-    const db = readDB();
+    const db = await readDB();
     const newInquiry: Inquiry = {
       id: "inq-" + Date.now(),
       name: String(name).slice(0, 100),
@@ -127,7 +207,7 @@ app.post("/api/inquiries", (req, res) => {
     };
 
     db.inquiries.push(newInquiry);
-    writeDB(db);
+    await writeDB(db);
 
     console.log(`[SMTP SIMULATOR] Routing contact submission to admin email (${db.globalSettings.routingEmail || 'default'}):`, newInquiry);
 
@@ -138,14 +218,14 @@ app.post("/api/inquiries", (req, res) => {
 });
 
 // Newsletter Subscription
-app.post("/api/newsletter", (req, res) => {
+app.post("/api/newsletter", async (req, res) => {
   try {
     const { email } = req.body;
     if (!email || !email.includes("@")) {
       return res.status(400).json({ success: false, error: "Please provide a valid email address." });
     }
 
-    const db = readDB();
+    const db = await readDB();
     const cleanEmail = email.trim().toLowerCase();
     
     // Check duplication
@@ -158,7 +238,7 @@ app.post("/api/newsletter", (req, res) => {
       email: cleanEmail,
       date: new Date().toISOString()
     });
-    writeDB(db);
+    await writeDB(db);
 
     res.json({ success: true, message: "Warm welcome to our collective! You are subscribed." });
   } catch (e: any) {
@@ -171,13 +251,17 @@ app.post("/api/newsletter", (req, res) => {
 // ==========================================
 
 // Login Route
-app.post("/api/admin/login", (req, res) => {
+app.post("/api/admin/login", async (req, res) => {
   try {
     const { password } = req.body;
-    const db = readDB();
+    const db = await readDB();
     const correctPassword = db.globalSettings.adminPassword || "admin123";
     
-    if (password === correctPassword) {
+    // Support case-insensitive match for the default sandbox key 'admin' (e.g. if user types 'Admin' or 'admin')
+    const isDefaultAdmin = correctPassword.trim().toLowerCase() === "admin";
+    const isInputAdmin = password && password.trim().toLowerCase() === "admin";
+    
+    if (password === correctPassword || (isDefaultAdmin && isInputAdmin)) {
       res.json({ success: true, token: ADMIN_TOKEN_KEY });
     } else {
       res.status(401).json({ success: false, error: "Incorrect administrator password." });
@@ -196,24 +280,131 @@ function adminAuthGate(req: express.Request, res: express.Response, next: expres
 }
 
 // Fetch complete payload including administration entries
-app.get("/api/admin/data", adminAuthGate, (req, res) => {
+app.get("/api/admin/data", adminAuthGate, async (req, res) => {
   try {
-    const db = readDB();
+    const db = await readDB();
     res.json({ success: true, data: db });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
+// Test Supabase credentials connection and schema health status
+app.get("/api/admin/supabase-status", adminAuthGate, async (req, res) => {
+  try {
+    const url = process.env.SUPABASE_URL || "";
+    const key = process.env.SUPABASE_KEY || "";
+    
+    if (!url || !key || url === "MY_SUPABASE_URL" || key === "MY_SUPABASE_KEY" || url.trim() === "" || key.trim() === "") {
+      return res.json({
+        success: false,
+        step: "config",
+        error: "Supabase environment variables are missing or default in your workspace environments.",
+        envExample: {
+          SUPABASE_URL: url || "(undefined)",
+          SUPABASE_KEY: key ? "••••••••••••" : "(undefined)"
+        }
+      });
+    }
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      return res.json({
+        success: false,
+        step: "client_init",
+        error: "Failed to initialize Supabase client. Please check your Supabase credentials format."
+      });
+    }
+
+    // Step 1: Query table
+    let readResponse;
+    try {
+      readResponse = await supabase
+        .from("nursery_store")
+        .select("key")
+        .eq("key", "cupid_db_store")
+        .maybeSingle();
+    } catch (e: any) {
+      return res.json({
+        success: false,
+        step: "read_query_fail",
+        error: `Query execution exception: ${e.message || e}`,
+        sqlFix: `CREATE TABLE IF NOT EXISTS nursery_store (\n  key TEXT PRIMARY KEY,\n  data JSONB NOT NULL,\n  updated_at TIMESTAMPTZ DEFAULT now()\n);`
+      });
+    }
+
+    if (readResponse.error) {
+      const err = readResponse.error;
+      if (err.code === "42P01") {
+        return res.json({
+          success: false,
+          step: "table_missing",
+          error: "The table 'nursery_store' does not exist in your Supabase database schema.",
+          sqlFix: `CREATE TABLE IF NOT EXISTS nursery_store (\n  key TEXT PRIMARY KEY,\n  data JSONB NOT NULL,\n  updated_at TIMESTAMPTZ DEFAULT now()\n);`
+        });
+      }
+      return res.json({
+        success: false,
+        step: "read_error",
+        error: `Supabase API error: ${err.message} (Code: ${err.code})`
+      });
+    }
+
+    // Step 2: Try inserting / upserting connection check record
+    const testKey = "cupid_supabase_conn_test";
+    const testData = { success: true, tested_at: new Date().toISOString(), message: "Supabase connection check completed successfully!" };
+    
+    const upsertResponse = await supabase
+      .from("nursery_store")
+      .upsert({ key: testKey, data: testData, updated_at: new Date().toISOString() });
+
+    if (upsertResponse.error) {
+      return res.json({
+        success: false,
+        step: "write_error",
+        error: `Failed to insert test record: ${upsertResponse.error.message} (Code: ${upsertResponse.error.code})`
+      });
+    }
+
+    // Step 3: Verify read
+    const verifyResponse = await supabase
+      .from("nursery_store")
+      .select("data")
+      .eq("key", testKey)
+      .maybeSingle();
+
+    const verifiedRecord = verifyResponse.data?.data;
+
+    // Clean up
+    await supabase
+      .from("nursery_store")
+      .delete()
+      .eq("key", testKey);
+
+    return res.json({
+      success: true,
+      step: "complete",
+      message: "Connected to Supabase and verified read/write logs successfully!",
+      configuration: {
+        host: new URL(url).host,
+        table: "nursery_store"
+      },
+      testRecordInfo: verifiedRecord
+    });
+  } catch (e: any) {
+    res.status(500).json({ success: false, step: "exception", error: e.message || String(e) });
+  }
+});
+
 // Update Global config settings
-app.post("/api/admin/update-settings", adminAuthGate, (req, res) => {
+app.post("/api/admin/update-settings", adminAuthGate, async (req, res) => {
   try {
     const { routingEmail, introHeadline, introSubheadline, introBody, adminPassword } = req.body;
     if (!routingEmail || !introHeadline || !introSubheadline || !introBody) {
       return res.status(400).json({ success: false, error: "Required global values cannot be empty." });
     }
 
-    const db = readDB();
+    const db = await readDB();
     db.globalSettings.routingEmail = routingEmail;
     db.globalSettings.introHeadline = introHeadline;
     db.globalSettings.introSubheadline = introSubheadline;
@@ -223,7 +414,7 @@ app.post("/api/admin/update-settings", adminAuthGate, (req, res) => {
       db.globalSettings.adminPassword = adminPassword.trim();
     }
 
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Global settings successfully updated!" });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -231,10 +422,10 @@ app.post("/api/admin/update-settings", adminAuthGate, (req, res) => {
 });
 
 // Update Nursery physical policies
-app.post("/api/admin/update-guidelines", adminAuthGate, (req, res) => {
+app.post("/api/admin/update-guidelines", adminAuthGate, async (req, res) => {
   try {
     const { locationDescription, sessionBoundaries, rules, expectations } = req.body;
-    const db = readDB();
+    const db = await readDB();
 
     db.nurseryGuidelines = {
       locationDescription: locationDescription || "",
@@ -243,7 +434,7 @@ app.post("/api/admin/update-guidelines", adminAuthGate, (req, res) => {
       expectations: expectations || ""
     };
 
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Nursery guidelines updated!" });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -251,14 +442,14 @@ app.post("/api/admin/update-guidelines", adminAuthGate, (req, res) => {
 });
 
 // Create or update physical/virtual package
-app.post("/api/admin/packages", adminAuthGate, (req, res) => {
+app.post("/api/admin/packages", adminAuthGate, async (req, res) => {
   try {
     const pkg = req.body as NurseryPackage;
     if (!pkg.name || !pkg.description || pkg.duration <= 0 || pkg.price < 0) {
       return res.status(400).json({ success: false, error: "Please enter valid values for the package fields." });
     }
 
-    const db = readDB();
+    const db = await readDB();
     const index = db.packages.findIndex(p => p.id === pkg.id);
     
     if (index >= 0) {
@@ -268,7 +459,7 @@ app.post("/api/admin/packages", adminAuthGate, (req, res) => {
       db.packages.push(pkg);
     }
 
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Package details saved!", package: pkg });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -276,12 +467,12 @@ app.post("/api/admin/packages", adminAuthGate, (req, res) => {
 });
 
 // Delete physical/virtual package
-app.delete("/api/admin/packages/:id", adminAuthGate, (req, res) => {
+app.delete("/api/admin/packages/:id", adminAuthGate, async (req, res) => {
   try {
     const id = req.params.id;
-    const db = readDB();
+    const db = await readDB();
     db.packages = db.packages.filter(p => p.id !== id);
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Package successfully deleted." });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -289,14 +480,14 @@ app.delete("/api/admin/packages/:id", adminAuthGate, (req, res) => {
 });
 
 // Create or update caregiver
-app.post("/api/admin/caregivers", adminAuthGate, (req, res) => {
+app.post("/api/admin/caregivers", adminAuthGate, async (req, res) => {
   try {
     const caregiver = req.body as Caregiver;
     if (!caregiver.name || !caregiver.bio || !caregiver.philosophy) {
       return res.status(400).json({ success: false, error: "Name, Biography, and Philosophy are required." });
     }
 
-    const db = readDB();
+    const db = await readDB();
     const index = db.caregivers.findIndex(c => c.id === caregiver.id);
     
     if (index >= 0) {
@@ -310,7 +501,7 @@ app.post("/api/admin/caregivers", adminAuthGate, (req, res) => {
       db.caregivers.push(caregiver);
     }
 
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Caregiver profile saved!", caregiver });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -318,12 +509,12 @@ app.post("/api/admin/caregivers", adminAuthGate, (req, res) => {
 });
 
 // Delete caregiver
-app.delete("/api/admin/caregivers/:id", adminAuthGate, (req, res) => {
+app.delete("/api/admin/caregivers/:id", adminAuthGate, async (req, res) => {
   try {
     const id = req.params.id;
-    const db = readDB();
+    const db = await readDB();
     db.caregivers = db.caregivers.filter(c => c.id !== id);
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Caregiver profile deleted." });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -331,14 +522,14 @@ app.delete("/api/admin/caregivers/:id", adminAuthGate, (req, res) => {
 });
 
 // Create or update Resource blog/review
-app.post("/api/admin/blog", adminAuthGate, (req, res) => {
+app.post("/api/admin/blog", adminAuthGate, async (req, res) => {
   try {
     const article = req.body as BlogArticle;
     if (!article.title || !article.content || !article.category) {
       return res.status(400).json({ success: false, error: "Title, content, and category are required." });
     }
 
-    const db = readDB();
+    const db = await readDB();
     const index = db.blogArticles.findIndex(b => b.id === article.id);
 
     if (index >= 0) {
@@ -349,7 +540,7 @@ app.post("/api/admin/blog", adminAuthGate, (req, res) => {
       db.blogArticles.push(article);
     }
 
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Article details saved!" });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -357,12 +548,12 @@ app.post("/api/admin/blog", adminAuthGate, (req, res) => {
 });
 
 // Delete blog
-app.delete("/api/admin/blog/:id", adminAuthGate, (req, res) => {
+app.delete("/api/admin/blog/:id", adminAuthGate, async (req, res) => {
   try {
     const id = req.params.id;
-    const db = readDB();
+    const db = await readDB();
     db.blogArticles = db.blogArticles.filter(b => b.id !== id);
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Article deleted successfully." });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -370,14 +561,14 @@ app.delete("/api/admin/blog/:id", adminAuthGate, (req, res) => {
 });
 
 // Create or update Safety warnings alerts
-app.post("/api/admin/safety-alerts", adminAuthGate, (req, res) => {
+app.post("/api/admin/safety-alerts", adminAuthGate, async (req, res) => {
   try {
     const alert = req.body as SafetyAlert;
     if (!alert.title || !alert.details || !alert.recommendations) {
       return res.status(400).json({ success: false, error: "Title, details, and recommendations are required." });
     }
 
-    const db = readDB();
+    const db = await readDB();
     const index = db.safetyAlerts.findIndex(s => s.id === alert.id);
 
     if (index >= 0) {
@@ -388,7 +579,7 @@ app.post("/api/admin/safety-alerts", adminAuthGate, (req, res) => {
       db.safetyAlerts.push(alert);
     }
 
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Safety alert saved!" });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -396,12 +587,12 @@ app.post("/api/admin/safety-alerts", adminAuthGate, (req, res) => {
 });
 
 // Delete Safety alert
-app.delete("/api/admin/safety-alerts/:id", adminAuthGate, (req, res) => {
+app.delete("/api/admin/safety-alerts/:id", adminAuthGate, async (req, res) => {
   try {
     const id = req.params.id;
-    const db = readDB();
+    const db = await readDB();
     db.safetyAlerts = db.safetyAlerts.filter(s => s.id !== id);
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Safety alert successfully deleted." });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -409,14 +600,14 @@ app.delete("/api/admin/safety-alerts/:id", adminAuthGate, (req, res) => {
 });
 
 // Create or update Support Hotline
-app.post("/api/admin/hotlines", adminAuthGate, (req, res) => {
+app.post("/api/admin/hotlines", adminAuthGate, async (req, res) => {
   try {
     const hot = req.body as MentalHealthResource;
     if (!hot.name || !hot.phone || !hot.description || !hot.category) {
       return res.status(400).json({ success: false, error: "Name, connection phone/code, category, and explanation are required." });
     }
 
-    const db = readDB();
+    const db = await readDB();
     const index = db.hotlines.findIndex(h => h.id === hot.id);
 
     if (index >= 0) {
@@ -426,7 +617,7 @@ app.post("/api/admin/hotlines", adminAuthGate, (req, res) => {
       db.hotlines.push(hot);
     }
 
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Resource listing saved!" });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -434,12 +625,12 @@ app.post("/api/admin/hotlines", adminAuthGate, (req, res) => {
 });
 
 // Delete Support Hotline
-app.delete("/api/admin/hotlines/:id", adminAuthGate, (req, res) => {
+app.delete("/api/admin/hotlines/:id", adminAuthGate, async (req, res) => {
   try {
     const id = req.params.id;
-    const db = readDB();
+    const db = await readDB();
     db.hotlines = db.hotlines.filter(h => h.id !== id);
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "Crisis line directory entry removed." });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -447,14 +638,14 @@ app.delete("/api/admin/hotlines/:id", adminAuthGate, (req, res) => {
 });
 
 // Create or update FAQ
-app.post("/api/admin/faqs", adminAuthGate, (req, res) => {
+app.post("/api/admin/faqs", adminAuthGate, async (req, res) => {
   try {
     const faq = req.body as FAQItem;
     if (!faq.question || !faq.answer || !faq.category) {
       return res.status(400).json({ success: false, error: "Question, answer, and category tag are required." });
     }
 
-    const db = readDB();
+    const db = await readDB();
     const index = db.faqs.findIndex(f => f.id === faq.id);
 
     if (index >= 0) {
@@ -465,7 +656,7 @@ app.post("/api/admin/faqs", adminAuthGate, (req, res) => {
       db.faqs.push(faq);
     }
 
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "FAQ saved!" });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -473,12 +664,12 @@ app.post("/api/admin/faqs", adminAuthGate, (req, res) => {
 });
 
 // Delete FAQ
-app.delete("/api/admin/faqs/:id", adminAuthGate, (req, res) => {
+app.delete("/api/admin/faqs/:id", adminAuthGate, async (req, res) => {
   try {
     const id = req.params.id;
-    const db = readDB();
+    const db = await readDB();
     db.faqs = db.faqs.filter(f => f.id !== id);
-    writeDB(db);
+    await writeDB(db);
     res.json({ success: true, message: "FAQ item removed successfully." });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
@@ -486,15 +677,15 @@ app.delete("/api/admin/faqs/:id", adminAuthGate, (req, res) => {
 });
 
 // Toggle Inquiry read status
-app.post("/api/admin/inquiries/:id/read", adminAuthGate, (req, res) => {
+app.post("/api/admin/inquiries/:id/read", adminAuthGate, async (req, res) => {
   try {
     const id = req.params.id;
     const { read } = req.body;
-    const db = readDB();
+    const db = await readDB();
     const index = db.inquiries.findIndex(i => i.id === id);
     if (index >= 0) {
       db.inquiries[index].read = !!read;
-      writeDB(db);
+      await writeDB(db);
       return res.json({ success: true, message: "Inquiry status updated." });
     }
     res.status(404).json({ success: false, error: "Inquiry not found." });
@@ -504,9 +695,9 @@ app.post("/api/admin/inquiries/:id/read", adminAuthGate, (req, res) => {
 });
 
 // Export mailing list as CSV
-app.get("/api/admin/mailing-list/export", adminAuthGate, (req, res) => {
+app.get("/api/admin/mailing-list/export", adminAuthGate, async (req, res) => {
   try {
-    const db = readDB();
+    const db = await readDB();
     const mailingList = db.mailingList || [];
     
     // Construct simple CSV

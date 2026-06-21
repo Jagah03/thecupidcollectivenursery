@@ -25,6 +25,30 @@ export default function AdminPanel() {
   const [editingFaq, setEditingFaq] = useState<Partial<FAQItem> | null>(null);
   const [editingTestimonial, setEditingTestimonial] = useState<Partial<Testimonial> | null>(null);
 
+  // Supabase test connection states
+  const [supabaseTestLoading, setSupabaseTestLoading] = useState(false);
+  const [supabaseTestResult, setSupabaseTestResult] = useState<any | null>(null);
+
+  const testSupabaseConnection = async () => {
+    if (!token) return;
+    setSupabaseTestLoading(true);
+    setSupabaseTestResult(null);
+    try {
+      const res = await fetch("/api/admin/supabase-status", {
+        headers: { "Authorization": token }
+      });
+      const data = await res.json();
+      setSupabaseTestResult(data);
+    } catch (err: any) {
+      setSupabaseTestResult({
+        success: false,
+        error: "Failed to connect to backend server endpoint."
+      });
+    } finally {
+      setSupabaseTestLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Sync state login if previously stored in memory
     const storedToken = sessionStorage.getItem("cupid_admin_token");
@@ -1449,6 +1473,82 @@ export default function AdminPanel() {
                   Update Credentials & Routing
                 </button>
               </form>
+
+              {/* Supabase Database Connection Tester */}
+              <div className="border-t border-stone-100 pt-8 space-y-4">
+                <div>
+                  <h3 className="text-md font-bold text-stone-800 font-display">Supabase Integration & Health Check</h3>
+                  <p className="text-xs text-stone-450 mt-0.5">Test real-time connection status with your Supabase schema and run a diagnostic read/write query.</p>
+                </div>
+
+                <div className="bg-stone-50 border rounded-2xl p-5 max-w-xl space-y-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-stone-800">Supabase Connection Diagnostics</p>
+                      <p className="text-[10px] text-stone-450 font-sans leading-normal">
+                        Triggers server-side initialization, creates a connection check record in the <b className="text-stone-705">nursery_store</b> table, reads it back to confirm full read/write privileges, and cleans up.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={testSupabaseConnection}
+                      disabled={supabaseTestLoading}
+                      className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl bg-vibrant-charcoal hover:bg-stone-700 font-bold text-white px-4 py-2.5 text-xs shadow-sm disabled:opacity-50 transition"
+                    >
+                      {supabaseTestLoading ? (
+                        <>
+                          <RefreshCw size={14} className="animate-spin" />
+                          Testing...
+                        </>
+                      ) : (
+                        "Test Connection"
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Render test outputs dynamically */}
+                  {supabaseTestResult && (
+                    <div className={`p-4 rounded-xl text-xs space-y-2 border transition-all ${
+                      supabaseTestResult.success 
+                        ? "bg-emerald-50 border-emerald-150 text-emerald-800" 
+                        : "bg-amber-50 border-amber-150 text-amber-900"
+                    }`}>
+                      <div className="flex gap-2 items-center font-bold">
+                        {supabaseTestResult.success ? (
+                          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        ) : (
+                          <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                        )}
+                        <span>Status: {supabaseTestResult.success ? "Connected Successfully!" : "Connection Diagnostic Failed"}</span>
+                      </div>
+                      
+                      <p className="text-[11px] leading-relaxed font-sans">{supabaseTestResult.message || supabaseTestResult.error}</p>
+
+                      {supabaseTestResult.configuration && (
+                        <div className="bg-white p-3 rounded-lg border text-[10px] space-y-1 font-mono">
+                          <div><b>Supabase Host:</b> {supabaseTestResult.configuration.host}</div>
+                          <div><b>Store Table:</b> {supabaseTestResult.configuration.table}</div>
+                          {supabaseTestResult.testRecordInfo && (
+                            <div className="mt-2 text-[9px] text-stone-500 bg-stone-50/50 p-2 rounded border border-stone-100">
+                              <b>Verified Test Record Write-back:</b>
+                              <pre className="mt-1 whitespace-pre-wrap">{JSON.stringify(supabaseTestResult.testRecordInfo, null, 2)}</pre>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Display SQL fix helper if table is missing or query fails */}
+                      {supabaseTestResult.sqlFix && (
+                        <div className="mt-3 space-y-1.5 bg-white p-3.5 rounded-xl border border-stone-200">
+                          <p className="text-[10px] font-bold text-stone-700 uppercase tracking-wide">🔧 SQL Initializer Helper Code</p>
+                          <p className="text-[10px] text-stone-500 font-sans">Run this SQL code block inside your <b>Supabase SQL Editor</b> to provision the registry store table:</p>
+                          <pre className="p-2.5 bg-stone-50 rounded-lg text-[9px] text-rose-600 font-mono select-all overflow-x-auto border">{supabaseTestResult.sqlFix}</pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Mailing List Export Tools */}
               <div className="border-t border-stone-100 pt-8 space-y-4">
