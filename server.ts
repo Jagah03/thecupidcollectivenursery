@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { createServer as createViteServer } from "vite";
 import { createClient } from "@supabase/supabase-js";
 import { DBStore, GlobalSettings, NurseryGuidelines, NurseryPackage, Caregiver, BlogArticle, SafetyAlert, MentalHealthResource, FAQItem, Testimonial, Inquiry } from "./src/types";
 
@@ -14,9 +13,13 @@ app.use(express.json({ limit: "15mb" })); // Support large base64 uploads if nee
 
 // Ensure DB and Upload directories exist
 function ensureDirs() {
-  const dataDir = path.join(process.cwd(), "data");
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
+  try {
+    const dataDir = path.join(process.cwd(), "data");
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+  } catch (err) {
+    console.error("Directory assurance failed:", err);
   }
 }
 ensureDirs();
@@ -724,6 +727,7 @@ app.get("/api/admin/mailing-list/export", adminAuthGate, async (req, res) => {
 async function startServer() {
   // If we are not in production state, mount standard dev Vite server middleware
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
