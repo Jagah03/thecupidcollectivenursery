@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Quicksand", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  /* Vibrant Palette Core Colors */
+  --color-vibrant-bg: #FDFBF7;
+  --color-vibrant-charcoal: #5A5A5A;
+  --color-vibrant-dark: #4A4A4A;
+  --color-vibrant-gold : #E9D5A1;
+  --color-vibrant-gold-text: #8D7A4D;
+  --color-vibrant-gold-border: #D4C08D;
+  --color-vibrant-pink: #F4DADA;
+  --color-vibrant-blue: #D0EAF5;
+  --color-vibrant-blue-text: #4A6A7A;
+  --color-vibrant-blue-border: #A0CAD5;
+  
+  /* Fallback color compatibility matches */
+  --color-pastel-cream: #FDFBF7;
+  --color-pastel-rose: #F4DADA;
+  --color-pastel-gold: #E9D5A1;
+  --color-pastel-blue: #D0EAF5;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #FDFBF7;
+  color: #4A4A4A;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+/* Custom scrollbar to keep it soft and round */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #fdfaf2;
+}
+::-webkit-scrollbar-thumb {
+  background: #f1dfde;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #fbcbc9;
+}
+

@@ -1,0 +1,6 @@
+{
+  "name": "The Cupid Collective Nursery",
+  "description": "A comforting informational and resource-driven platform for therapeutic age-regression services, stress relief, and professional caregiving content.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
