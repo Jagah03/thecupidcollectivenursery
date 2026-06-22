@@ -1,4 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+const getSectionFromPath = () => {
+  const path = window.location.pathname.replace(/^\//, "").replace(/\/$/, "");
+  const parts = path.split("/");
+  if (parts[0] === "resources" && parts[1]) {
+    const valid = ["all", "hotlines", "safety", "articles", "faqs"];
+    if (valid.includes(parts[1] as any)) return parts[1] as any;
+  }
+  return "all";
+};
 import { Phone, AlertTriangle, BookOpen, HelpCircle, HeartPulse, ChevronDown, ChevronUp, ShieldAlert, CheckCircle, ExternalLink } from "lucide-react";
 import { BlogArticle, SafetyAlert, MentalHealthResource, FAQItem } from "../types";
 
@@ -10,12 +20,20 @@ interface ResourcesViewProps {
 }
 
 export default function ResourcesView({ blogArticles, safetyAlerts, hotlines, faqs }: ResourcesViewProps) {
-  const [activeTab, setActiveTab] = useState<"all" | "hotlines" | "safety" | "articles" | "faqs">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "hotlines" | "safety" | "articles" | "faqs">(getSectionFromPath());
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
 
   const toggleFaq = (id: string) => {
-    setExpandedFaq(expandedFaq === id ? null : id);
-  };
+  setExpandedFaq(expandedFaq === id ? null : id);
+};
+
+React.useEffect(() => {
+  const targetPath = activeTab === "all" ? "/resources/hotlines" : "/resources/" + activeTab;
+  if (window.location.pathname !== targetPath) {
+    window.history.pushState({}, "", targetPath);
+  }
+}, [activeTab]);
+
 
   // Group hotlines by category
   const hotlineCategories = hotlines.reduce((acc, current) => {

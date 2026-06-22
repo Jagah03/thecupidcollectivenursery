@@ -33,7 +33,7 @@ export default function App() {
   // Clean navigation helper that updates browser address bar path
   const navigateToTab = (tabName: string) => {
     setActiveTab(tabName);
-    const targetPath = tabName === "home" ? "/" : `/${tabName}`;
+    const targetPath = tabName === "home" ? "/" : tabName === "resources" ? "/resources/hotlines" : `/${tabName}`;
     if (window.location.pathname !== targetPath) {
       window.history.pushState({}, "", targetPath);
     }
@@ -43,13 +43,13 @@ export default function App() {
   useEffect(() => {
     const handleLocationCheck = () => {
       const path = window.location.pathname.replace(/^\/|\/$/g, "");
-      if (path === "admin") {
-        setActiveTab("admin");
-      } else if (path === "sessions" || path === "resources" || path === "contact") {
-        setActiveTab(path);
-      } else {
-        setActiveTab("home");
-      }
+if (path === "admin") {
+         setActiveTab("admin");
+       } else if (path.startsWith("resources") || path === "sessions" || path === "contact") {
+         setActiveTab("resources");
+       } else {
+         setActiveTab("home");
+       }
     };
 
     handleLocationCheck();
