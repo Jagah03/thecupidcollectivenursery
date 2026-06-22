@@ -1,6 +1,5 @@
+import "dotenv/config";
 import express from "express";
-import path from "path";
-import fs from "fs";
 import { createClient } from "@supabase/supabase-js";
 
 const app = express();
@@ -8,93 +7,104 @@ app.use(express.json({ limit: "15mb" }));
 
 // ---- Types (inlined to avoid cross-file imports) ----
 interface GlobalSettings {
-    adminPassword: string;
-    routingEmail: string;
-    introHeadline: string;
-    introSubheadline: string;
-    introBody: string;
-}
-interface NurseryGuidelines {
-    locationDescription: string;
-    sessionBoundaries: string;
-    rules: string;
-    expectations: string;
-}
-interface NurseryPackage {
-    id: string;
-    name: string;
-    description: string;
-    duration: number;
-    price: number;
-    isActive: boolean;
-    isVirtual: boolean;
-}
-interface Caregiver {
-    id: string;
-    name: string;
-    imageUrl: string;
-    bio: string;
-    philosophy: string;
-}
-interface BlogArticle {
-    id: string;
-    title: string;
-    content: string;
-    category: string;
-    date: string;
-}
-interface SafetyAlert {
-    id: string;
-    title: string;
-    details: string;
-    recommendations: string;
-    date: string;
-}
-interface MentalHealthResource {
-    id: string;
-    name: string;
-    phone: string;
-    description: string;
-    category: string;
-}
-interface FAQItem {
-    id: string;
-    question: string;
-    answer: string;
-    category: string;
-    orderIndex: number;
-}
-interface Testimonial {
-    id: string;
-    author: string;
-    content: string;
-}
-interface Inquiry {
-    id: string;
-    name: string;
-    pronouns: string;
-    email: string;
-    subject: string;
-    message: string;
-    date: string;
-    read: boolean;
-}
-interface DBStore {
-    globalSettings: GlobalSettings;
-    nurseryGuidelines: NurseryGuidelines;
-    packages: NurseryPackage[];
-    caregivers: Caregiver[];
-    blogArticles: BlogArticle[];
-    safetyAlerts: SafetyAlert[];
-    hotlines: MentalHealthResource[];
-    faqs: FAQItem[];
-    testimonials: Testimonial[];
-    inquiries: Inquiry[];
-    mailingList: Array<{ email: string; date: string }>;
+  adminPassword?: string;
+  routingEmail: string;
+  introHeadline: string;
+  introSubheadline: string;
+  introBody: string;
 }
 
-// ---- DB Path ----
-const DB_PATH = path.join(process.cwd(), "data", "db.json");
+interface NurseryGuidelines {
+  locationDescription: string;
+  sessionBoundaries: string;
+  rules: string;
+  expectations: string;
+}
+
+interface NurseryPackage {
+  id: string;
+  name: string;
+  description: string;
+  duration: number;
+  price: number;
+  isActive: boolean;
+  isVirtual: boolean;
+}
+
+interface Caregiver {
+  id: string;
+  name: string;
+  imageUrl: string;
+  bio: string;
+  philosophy: string;
+}
+
+interface BlogArticle {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  category: string;
+}
+
+interface SafetyAlert {
+  id: string;
+  title: string;
+  date: string;
+  details: string;
+  recommendations: string;
+}
+
+interface MentalHealthResource {
+  id: string;
+  name: string;
+  phone: string;
+  textCode?: string;
+  link?: string;
+  category: string;
+  description: string;
+}
+
+interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+  orderIndex: number;
+}
+
+interface Testimonial {
+  id: string;
+  author: string;
+  quote: string;
+  rating: number;
+  role: string;
+}
+
+interface Inquiry {
+  id: string;
+  name: string;
+  pronouns: string;
+  email: string;
+  subject: string;
+  message: string;
+  date: string;
+  read: boolean;
+}
+
+interface DBStore {
+  globalSettings: GlobalSettings;
+  nurseryGuidelines: NurseryGuidelines;
+  packages: NurseryPackage[];
+  caregivers: Caregiver[];
+  blogArticles: BlogArticle[];
+  safetyAlerts: SafetyAlert[];
+  hotlines: MentalHealthResource[];
+  faqs: FAQItem[];
+  testimonials: Testimonial[];
+  inquiries: Inquiry[];
+  mailingList: Array<{ email: string; date: string }>;
+}
 
 // ---- Supabase ----
 let supabaseClient: any = null;
@@ -109,54 +119,201 @@ function getSupabase() {
     return supabaseClient;
 }
 
-// ---- Local DB helpers ----
 function getDefaultDB(): DBStore {
     return {
         globalSettings: {
             adminPassword: "admin",
             routingEmail: "care@thecupidcollectivenursery.com",
-            introHeadline: "A Safe, Nurturing Sanctuary",
-            introSubheadline: "Step into therapeutic age-regression",
-            introBody: "A peaceful sanctuary for adults."
+            introHeadline: "A Safe, Nurturing Sanctuary for Therapeutic Age-Regression",
+            introSubheadline: "Step into a professionally-guided, non-sexual space designed to relieve adult stress, anxiety, and trauma.",
+            introBody: "The Cupid Collective Nursery offers a welcoming environment where adults (18+) can safely utilize childhood regression as a healthy, guided coping mechanism. Led by professional, compassionate caregivers, our programs offer a peaceful escape from the demands of everyday life, ensuring complete safety, clear boundaries, and empathetic care."
         },
         nurseryGuidelines: {
-            locationDescription: "A comforting location.",
-            sessionBoundaries: "### Non-Sexual Boundaries\nProfessional caregivers.",
-            rules: "### Rules\nBe gentle.",
-            expectations: "### Expectations\nCompassionate care."
+            locationDescription: "Our primary physical sanctuary is nestled in a quiet, private location, designed to feel exactly like a warm, comforting nursery. Complete with soft pastel colors, reading nooks, activity tables, and clean amenities, it offers the ultimate peace of mind.",
+            sessionBoundaries: "### Absolute Boundaries (Strictly Non-Sexual)\n- **Strict Professional Standards**: The Cupid Collective Nursery operates on a 100% therapeutic, non-sexual foundation. No sexual behaviors, language, or implications are tolerated under any circumstances.\n- **Consent & Dual-Signed Agreements**: Written consent contracts detailing specific activities, limits, and rules are signed by both staff and clients before every session begins.\n- **Active Session Stop Signals**: Reliable verbal and non-verbal 'stop' signals are established so that clients maintain complete control over their physical safety.\n- **Dress Code**: Modest, non-suggestive clothing is required for all clients and staff.",
+            rules: "### Nursery House Rules\n1. **Kindness First**: Respect the space, yourself, and your caregivers at all times.\n2. **Cleanliness**: Always wash hands before snacks and clean up toys when finished playing.\n3. **Honesty**: Communicate how you feel. If you feel scared, happy, tired, or overwhelmed, share it with Mommy or Nanny.\n4. **Inside Voices**: Help keep the nursery peaceful by using soft, quiet voices during quiet hours.",
+            expectations: "### What to Expect\n- **Consultation Integration**: Every relationship begins with an in-depth intake call to discuss emotional triggers, desired regression level (infancy, toddlerhood, early school-age), and specific care goals.\n- **Unconditional Care**: We supply custom snacks, tailored story sessions, interactive drawing prompts, and guided sensory play.\n- **Safe Transition Integration**: Caregivers provide structured warm-down periods to help you transition smoothly and safely back into your adult headspace."
         },
-        packages: [],
-        caregivers: [],
-        blogArticles: [],
-        safetyAlerts: [],
-        hotlines: [],
-        faqs: [],
-        testimonials: [],
+        packages: [
+            {
+                id: "pkg-1",
+                name: "Nursery Playtime & Sensory Session",
+                description: "An immersive in-person session in our physical playroom. Includes custom coloring, sensory toys (kinetic sand, blocks), personalized snack-time, and therapeutic caregiver support.",
+                duration: 180,
+                price: 280,
+                isActive: true,
+                isVirtual: false
+            },
+            {
+                id: "pkg-2",
+                name: "Nursery Nurture & Bedtime Comfort",
+                description: "Our premium in-person regression session. Designed for deeper stress relief. Includes story reading, soft nursery rhyme therapy, caregiver feeding assistance if requested, cuddles, and an extended nap period.",
+                duration: 240,
+                price: 380,
+                isActive: true,
+                isVirtual: false
+            },
+            {
+                id: "pkg-3",
+                name: "Virtual Caregiver Consultation",
+                description: "A 1-on-1 virtual video counseling session to discuss your therapeutic age regression goals, design customized home routines, and review healthy boundary-setting techniques.",
+                duration: 60,
+                price: 85,
+                isActive: true,
+                isVirtual: true
+            },
+            {
+                id: "pkg-4",
+                name: "Virtual Storytime & Cozy Co-Regulating",
+                description: "A heartwarming virtual caregiver session via Zoom, Google Meet, or Discord. Enjoy comforting storybook reading, soft caregiver check-ins, nursery talk, and interactive drawing games.",
+                duration: 90,
+                price: 120,
+                isActive: true,
+                isVirtual: true
+            }
+        ],
+        caregivers: [
+            {
+                id: "cg-1",
+                name: "Mommy Emma",
+                imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
+                bio: "Emma is a certified social worker and experienced nursery care dynamic facilitator who has dedicated her life to mental health care and comforting safe spaces. She believes that healing our inner child is vital for adult well-being.",
+                philosophy: "Therapeutic age-regression is not about escaping reality permanently, but about resting the adult mind so it can return to everyday challenges with renewed peace and resilience."
+            },
+            {
+                id: "cg-2",
+                name: "Nanny Clara",
+                imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400",
+                bio: "Clara holds a degree in Early Childhood Studies and has spent over six years consulting with individuals on trauma rehabilitation and ADHD sensory management techniques.",
+                philosophy: "Every adult carries burdens they were forced to take on too early. My goal is to create a nurturing, unconditionally quiet cocoon where you can temporarily put that armor down."
+            }
+        ],
+        blogArticles: [
+            {
+                id: "blog-1",
+                title: "A Guide to Safe Regression Spaces at Home",
+                content: "Creating a personal nursery at home doesn't require a whole room. A cozy corner with soft pastel pillows, stuffed animals, coloring supplies, and specialized non-alcoholic beverages is a great start. Learn how to craft a sensory regression kit today.",
+                date: "2026-06-15",
+                category: "Reviews"
+            },
+            {
+                id: "blog-2",
+                title: "Reviews: Top Comfort Products of 2026",
+                content: "Our caregivers reviewed the latest therapeutic regression items on the market. From specialized heavy blankets that help alleviate ADHD sensory overloads, to high-durability infant-styled melamine dining sets designed for safe therapeutic motor-control exercises.",
+                date: "2026-05-20",
+                category: "Reviews"
+            },
+            {
+                id: "blog-3",
+                title: "What to Expect at ABDL Conventions",
+                content: "Attending public adult community gatherings can be stressful for beginners. We cover travel checklists, hotel security boundaries, and how to verify that organizers uphold professional, safe standards for regressors and companions alike.",
+                date: "2026-04-10",
+                category: "Conventions"
+            }
+        ],
+        safetyAlerts: [
+            {
+                id: "safe-1",
+                title: "Online Financial Grooming Exploitations",
+                date: "2026-06-18",
+                details: "We have received community warnings regarding malicious actors posting as caregiver figures with the primary intent of extracting heavy financial payments or emotional blackmail.",
+                recommendations: "Never send personal money transfers to unvetted 'caregivers' online. Set professional consultation frameworks, utilize transparent platform billing, and immediately cease conversations if a caregiver pressures you for financial favors or personal identification documents."
+            },
+            {
+                id: "safe-2",
+                title: "Identifying Vetted Therapeutic Frameworks",
+                date: "2026-05-14",
+                details: "Understanding who is on the internet is vital for adult safety. Authentic, ethical caregiving services must always provide standard boundary checklists, age gates, clear non-sexual declarations, and standard corporate consultation channels.",
+                recommendations: "Always check for a clear and professional privacy policy, structured dual-signed agreement files, and public reviews or social standing indicators before engaging in direct virtual caregiving packages."
+            }
+        ],
+        hotlines: [
+            {
+                id: "hl-1",
+                name: "National Crisis Lifeline (USA)",
+                phone: "988",
+                textCode: "988",
+                link: "https://988lifeline.org",
+                category: "General",
+                description: "Free, confidential, 24/7 suicide and mental health crisis support service."
+            },
+            {
+                id: "hl-2",
+                name: "Crisis Text Line",
+                phone: "Text HOME to 741741",
+                textCode: "HOME to 741741",
+                link: "https://www.crisistextline.org",
+                category: "General",
+                description: "Standard mental health text line supporting emotional distress crisis support."
+            },
+            {
+                id: "hl-3",
+                name: "Veterans Crisis Line",
+                phone: "988 (Press 1)",
+                textCode: "838255",
+                link: "https://www.veteranscrisisline.net",
+                category: "Veterans",
+                description: "Dedicated, secure crisis support for military veterans, service members, and their families."
+            },
+            {
+                id: "hl-4",
+                name: "The Trevor Project Lifeline",
+                phone: "1-866-488-7386",
+                textCode: "START to 678-678",
+                link: "https://www.thetrevorproject.org",
+                category: "LGBTQ+",
+                description: "Under-25 crisis line specifically staffed and tailored for LGBTQ+ youth."
+            }
+        ],
+        faqs: [
+            {
+                id: "faq-1",
+                question: "What is Age-Regression?",
+                answer: "Age-regression is a natural psychological coping mechanism where an adult temporarily retreats to an earlier childhood state to relieve stress, anxiety, or heal trauma. It allows the conscious mind to release worries and experience quiet nurturing.",
+                category: "Terminology",
+                orderIndex: 0
+            },
+            {
+                id: "faq-2",
+                question: "Is this platform or your sessions sexual in any way?",
+                answer: "No. The Cupid Collective Nursery operates on a highly strict, 100% professional non-sexual framework. Regression sessions are entirely platonic, therapeutic, and boundary-checked. We strictly support adult psychological health.",
+                category: "Safety",
+                orderIndex: 1
+            },
+            {
+                id: "faq-3",
+                question: "How do you verify my age?",
+                answer: "All visitors must consent to our age gates confirming they are 18 years or older. All physical or virtual sessions require submitting state-issued picture IDs to prove adult legal status before booking.",
+                category: "Administration",
+                orderIndex: 2
+            }
+        ],
+        testimonials: [
+            {
+                id: "t-1",
+                author: "Theo (Little Theo)",
+                quote: "Mommy Emma and Nanny Clara are incredibly respectful of boundaries. Coming here has helped ease my complex PTSD more than any conventional clinical therapy alone.",
+                rating: 5,
+                role: "In-person Little"
+            },
+            {
+                id: "t-2",
+                author: "Maya",
+                quote: "The virtual storytime sessions help me fall into a physical sleep without overnight panic attacks. I feel so incredibly protected and validated.",
+                rating: 5,
+                role: "Virtual Client"
+            },
+            {
+                id: "t-3",
+                author: "Coby",
+                quote: "Exceptional respect for agreement documents. Having dual-signed session boundaries makes it totally stress-free to regress securely.",
+                rating: 5,
+                role: "Nursery Session regular"
+            }
+        ],
         inquiries: [],
         mailingList: []
     };
-}
-
-function readLocalDB(): DBStore {
-    try {
-        if (fs.existsSync(DB_PATH)) {
-            const raw = fs.readFileSync(DB_PATH, "utf-8");
-            return JSON.parse(raw) as DBStore;
-        }
-    } catch (err) {
-        console.error("Local database reading warning:", err);
-    }
-    return getDefaultDB();
-}
-
-function writeLocalDB(data: DBStore) {
-    try {
-        // In serverless, /tmp is the only writable directory
-        const writePath = process.env.VERCEL ? "/tmp/db.json" : DB_PATH;
-        fs.writeFileSync(writePath, JSON.stringify(data, null, 2), "utf-8");
-    } catch (err) {
-        console.error("Local database writing error:", err);
-    }
 }
 
 async function writeDBToSupabase(data: DBStore) {
@@ -177,24 +334,34 @@ async function readDB(): Promise<DBStore> {
                 .select("data")
                 .eq("key", "cupid_db_store")
                 .maybeSingle();
-            if (!error && data && data.data) return data.data as DBStore;
-            if (!error) {
-                const localData = readLocalDB();
-                await writeDBToSupabase(localData);
-                return localData;
+            if (error) {
+                console.warn("Supabase query warning:", error.message);
+                return getDefaultDB();
+            } else if (data && data.data) {
+                return data.data as DBStore;
+            } else {
+                console.log("Supabase row 'cupid_db_store' not found. Initializing with default db configuration...");
+                const defaultData = getDefaultDB();
+                await writeDBToSupabase(defaultData);
+                return defaultData;
             }
         } catch (err: any) {
             console.error("Supabase read exception:", err.message || err);
         }
     }
-    return readLocalDB();
+    return getDefaultDB();
 }
 
 async function writeDB(data: DBStore) {
-    writeLocalDB(data);
     const supabase = getSupabase();
     if (supabase) {
-        try { await writeDBToSupabase(data); } catch (err: any) { console.error("Supabase write exception:", err.message); }
+        try {
+            await writeDBToSupabase(data);
+        } catch (err: any) {
+            console.error("Supabase write exception:", err.message);
+        }
+    } else {
+        console.warn("Supabase is not initialized. Cannot persist writeDB.");
     }
 }
 

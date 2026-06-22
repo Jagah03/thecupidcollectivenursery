@@ -30,6 +30,33 @@ export default function App() {
   // State to support clicking "Book" on a package to auto-populate contact subject
   const [selectedPackageSubject, setSelectedPackageSubject] = useState("");
 
+  // Clean navigation helper that updates browser address bar path
+  const navigateToTab = (tabName: string) => {
+    setActiveTab(tabName);
+    const targetPath = tabName === "home" ? "/" : `/${tabName}`;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({}, "", targetPath);
+    }
+  };
+
+  // URL path listener to allow back/forward navigation and direct entry endpoints
+  useEffect(() => {
+    const handleLocationCheck = () => {
+      const path = window.location.pathname.replace(/^\/|\/$/g, "");
+      if (path === "admin") {
+        setActiveTab("admin");
+      } else if (path === "sessions" || path === "resources" || path === "contact") {
+        setActiveTab(path);
+      } else {
+        setActiveTab("home");
+      }
+    };
+
+    handleLocationCheck();
+    window.addEventListener("popstate", handleLocationCheck);
+    return () => window.removeEventListener("popstate", handleLocationCheck);
+  }, []);
+
   const loadPublicData = async () => {
     setLoading(true);
     setErrorState(null);
@@ -54,7 +81,7 @@ export default function App() {
 
   const handleBookPackage = (packageSubject: string) => {
     setSelectedPackageSubject(packageSubject);
-    setActiveTab("contact");
+    navigateToTab("contact");
     // Scroll smoothly to top
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -100,7 +127,7 @@ export default function App() {
                 {/* Branding Brand logo */}
                 <div
                   id="header-brand"
-                  onClick={() => setActiveTab("home")}
+                  onClick={() => navigateToTab("home")}
                   className="flex items-center gap-2.5 cursor-pointer select-none group"
                 >
                   <div className="w-10 h-10 bg-vibrant-gold rounded-full flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -133,7 +160,7 @@ export default function App() {
                         key={tab.id}
                         id={`nav-link-${tab.id}`}
                         onClick={() => {
-                          setActiveTab(tab.id);
+                          navigateToTab(tab.id);
                           if (tab.id !== "contact") setSelectedPackageSubject("");
                         }}
                         className={`flex cursor-pointer items-center gap-1.5 px-2 py-2 text-xs font-bold uppercase tracking-widest transition-all border-b-2 hover:text-vibrant-dark ${isSel
@@ -152,18 +179,6 @@ export default function App() {
                   <span className="text-[10px] font-bold px-2.5 py-1 bg-vibrant-blue rounded text-vibrant-blue-text select-none uppercase tracking-wide">
                     18+ CERTIFIED
                   </span>
-
-                  {/* Admin Console Selector button */}
-                  <button
-                    id="nav-link-admin"
-                    onClick={() => setActiveTab("admin")}
-                    className={`flex cursor-pointer items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition ${activeTab === "admin"
-                        ? "bg-vibrant-charcoal text-white shadow-sm"
-                        : "bg-white text-vibrant-dark border border-stone-200 hover:bg-stone-50"
-                      }`}
-                  >
-                    Admin Console
-                  </button>
                 </nav>
 
                 {/* Mobile Tab Quick Nav buttons */}
@@ -171,13 +186,6 @@ export default function App() {
                   <span className="text-[9px] font-semibold px-2 py-1 bg-vibrant-blue rounded text-vibrant-blue-text">
                     18+
                   </span>
-                  <button
-                    onClick={() => setActiveTab("admin")}
-                    className={`rounded-xl px-3 py-2 text-[11px] font-bold border uppercase tracking-wider ${activeTab === "admin" ? "bg-vibrant-charcoal text-white" : "bg-white text-stone-500 border-stone-200"
-                      }`}
-                  >
-                    Admin
-                  </button>
                 </div>
               </div>
             </div>
@@ -207,7 +215,7 @@ export default function App() {
                     settings={finalSettings}
                     testimonials={finalTestimonials}
                     onNavigate={(tab) => {
-                      setActiveTab(tab);
+                      navigateToTab(tab);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                   />
