@@ -86,7 +86,7 @@ export default function App() {
 
   return (
     <div id="application-root" className="min-h-screen flex flex-col bg-vibrant-bg text-[#4A4A4A] antialiased font-sans transition-colors selection:bg-vibrant-pink/40 selection:text-vibrant-charcoal">
-      
+
       {/* 1. AGEGATE PROTECTION */}
       <AgeGate onVerify={() => setIsAgeVerified(true)} />
 
@@ -98,7 +98,7 @@ export default function App() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center h-20">
                 {/* Branding Brand logo */}
-                <div 
+                <div
                   id="header-brand"
                   onClick={() => setActiveTab("home")}
                   className="flex items-center gap-2.5 cursor-pointer select-none group"
@@ -136,11 +136,10 @@ export default function App() {
                           setActiveTab(tab.id);
                           if (tab.id !== "contact") setSelectedPackageSubject("");
                         }}
-                        className={`flex cursor-pointer items-center gap-1.5 px-2 py-2 text-xs font-bold uppercase tracking-widest transition-all border-b-2 hover:text-vibrant-dark ${
-                          isSel 
-                            ? "border-vibrant-gold text-vibrant-dark font-extrabold" 
+                        className={`flex cursor-pointer items-center gap-1.5 px-2 py-2 text-xs font-bold uppercase tracking-widest transition-all border-b-2 hover:text-vibrant-dark ${isSel
+                            ? "border-vibrant-gold text-vibrant-dark font-extrabold"
                             : "border-transparent text-stone-500 hover:border-vibrant-gold/40"
-                        }`}
+                          }`}
                       >
                         <Icon size={12} className={isSel ? "text-vibrant-charcoal" : "text-stone-400"} />
                         {tab.label}
@@ -158,11 +157,10 @@ export default function App() {
                   <button
                     id="nav-link-admin"
                     onClick={() => setActiveTab("admin")}
-                    className={`flex cursor-pointer items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition ${
-                      activeTab === "admin"
+                    className={`flex cursor-pointer items-center gap-1.5 px-3.5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition ${activeTab === "admin"
                         ? "bg-vibrant-charcoal text-white shadow-sm"
                         : "bg-white text-vibrant-dark border border-stone-200 hover:bg-stone-50"
-                    }`}
+                      }`}
                   >
                     Admin Console
                   </button>
@@ -175,9 +173,8 @@ export default function App() {
                   </span>
                   <button
                     onClick={() => setActiveTab("admin")}
-                    className={`rounded-xl px-3 py-2 text-[11px] font-bold border uppercase tracking-wider ${
-                      activeTab === "admin" ? "bg-vibrant-charcoal text-white" : "bg-white text-stone-500 border-stone-200"
-                    }`}
+                    className={`rounded-xl px-3 py-2 text-[11px] font-bold border uppercase tracking-wider ${activeTab === "admin" ? "bg-vibrant-charcoal text-white" : "bg-white text-stone-500 border-stone-200"
+                      }`}
                   >
                     Admin
                   </button>
@@ -262,14 +259,6 @@ export default function App() {
                 The Cupid Collective Nursery is a professional website providing informational coping and age-regression counseling guidelines. We are **100% platonic, ethical, and strictly secure**. No sexual behaviors, implications, or services are provided under any terms.
               </p>
 
-              {/* Quick links to navigate directly */}
-              <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-[#8A8A8A] font-semibold uppercase tracking-wider">
-                <span className="hover:text-vibrant-gold-text cursor-pointer" onClick={() => { setActiveTab("home"); window.scrollTo({ top: 0, behavior: "smooth"}); }}>Home</span>
-                <span className="hover:text-vibrant-gold-text cursor-pointer" onClick={() => { setActiveTab("sessions"); window.scrollTo({ top: 0, behavior: "smooth"}); }}>The Nursery</span>
-                <span className="hover:text-vibrant-gold-text cursor-pointer" onClick={() => { setActiveTab("resources"); window.scrollTo({ top: 0, behavior: "smooth"}); }}>Resources</span>
-                <span className="hover:text-vibrant-gold-text cursor-pointer" onClick={() => { setActiveTab("contact"); window.scrollTo({ top: 0, behavior: "smooth"}); }}>Contact</span>
-                <span className="hover:text-vibrant-gold-text cursor-pointer" onClick={() => { setActiveTab("admin"); window.scrollTo({ top: 0, behavior: "smooth"}); }}>Admin Login</span>
-              </div>
 
               <div className="border-t border-vibrant-pink/20 pt-6 text-[10px] text-stone-400 font-mono flex flex-col sm:flex-row justify-between gap-4 max-w-4xl mx-auto">
                 <p>© 2026 The Cupid Collective Nursery. All Rights Protected.</p>
