@@ -8,7 +8,6 @@ interface BookingViewProps {
 }
 
 export default function BookingView({ subject, onSuccess }: BookingViewProps) {
-  const [stripeLoaded, setStripeLoaded] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<"success" | "canceled" | null>(null);
 
   useEffect(() => {
@@ -79,13 +78,8 @@ export default function BookingView({ subject, onSuccess }: BookingViewProps) {
         </div>
       )}
 
-      <ContactForm initialSubject={subject} onSuccess={() => { onSuccess(); setStripeLoaded(false); }} />
-      {!stripeLoaded && (
-        <StripeCheckout
-          subject={subject}
-          onPaymentStart={() => setStripeLoaded(true)}
-        />
-      )}
+      <ContactForm initialSubject={subject} onSuccess={() => { onSuccess(); }} />
+      <StripeCheckout subject={subject} />
     </div>
   );
 }

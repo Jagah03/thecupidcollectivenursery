@@ -2,17 +2,15 @@ import React, { useState } from "react";
 
 interface StripeCheckoutProps {
   subject: string;
-  onPaymentStart: () => void;
 }
 
-export default function StripeCheckout({ subject, onPaymentStart }: StripeCheckoutProps) {
+export default function StripeCheckout({ subject }: StripeCheckoutProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleClick = async () => {
     setLoading(true);
     setError("");
-    onPaymentStart();
 
     try {
       const res = await fetch("/api/create-checkout-session", {
