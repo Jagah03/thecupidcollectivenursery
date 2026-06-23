@@ -401,7 +401,8 @@ app.post("/api/create-checkout-session", async (req, res) => {
     }
 
     const db = await readDB();
-    const pkg = db.packages.find(p => p.name === subject);
+    const cleanSubject = subject.replace(/^(In-Person Package|Virtual Package):\s*/i, "");
+    const pkg = db.packages.find(p => p.name === cleanSubject);
     if (!pkg) {
       return res.status(400).json({ error: "Package not found for: " + subject });
     }
