@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Baby, Home, Layers, CalendarHeart, Sparkles, RefreshCw, LogOut, ShieldCheck, Heart } from "lucide-react";
+import { Baby, Home, Layers, CalendarHeart, Sparkles, RefreshCw, LogOut, ShieldCheck, Heart, Moon, Sun } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import { DBStore } from "./types";
@@ -15,8 +15,11 @@ import ResourcesView from "./components/ResourcesView";
 import ContactForm from "./components/ContactForm";
 import AdminPanel from "./components/AdminPanel";
 import BookingView from "./components/BookingView";
+import { useTheme } from "./contexts/ThemeContext";
 
 export default function App() {
+  const { isDark, toggle } = useTheme();
+
   const [dbData, setDbData] = useState<DBStore | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorState, setErrorState] = useState<string | null>(null);
@@ -194,6 +197,14 @@ export default function App() {
                     );
                   })}
                 </nav>
+                <button
+                  onClick={toggle}
+                  className="cursor-pointer p-2 rounded-full hover:bg-vibrant-pink/40 transition-colors"
+                  aria-label="Toggle dark mode"
+                  title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                >
+                  {isDark ? <Sun size={16} className="text-vibrant-gold-text" /> : <Moon size={16} className="text-vibrant-charcoal" />}
+                </button>
                 <div className="h-4 w-px bg-stone-200 mx-1" />
                 <span className="text-[10px] font-bold px-2.5 py-1 bg-vibrant-blue rounded text-vibrant-blue-text select-none uppercase tracking-wide">
                   18+ CERTIFIED

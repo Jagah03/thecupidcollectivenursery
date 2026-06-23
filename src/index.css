@@ -1,39 +1,107 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Quicksand", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  
-  /* Vibrant Palette Core Colors */
-  --color-vibrant-bg: #FDFBF7;
-  --color-vibrant-charcoal: #5A5A5A;
-  --color-vibrant-dark: #4A4A4A;
-  --color-vibrant-gold : #E9D5A1;
-  --color-vibrant-gold-text: #8D7A4D;
-  --color-vibrant-gold-border: #D4C08D;
-  --color-vibrant-pink: #F4DADA;
-  --color-vibrant-blue: #D0EAF5;
-  --color-vibrant-blue-text: #4A6A7A;
-  --color-vibrant-blue-border: #A0CAD5;
-  
+
+  /* Vibrant Palette Core Colors - use CSS variable indirection for runtime switching */
+  --color-vibrant-bg: var(--clr-bg);
+  --color-vibrant-charcoal: var(--clr-charcoal);
+  --color-vibrant-dark: var(--clr-dark);
+  --color-vibrant-gold : var(--clr-gold);
+  --color-vibrant-gold-text: var(--clr-gold-text);
+  --color-vibrant-gold-border: var(--clr-gold-border);
+  --color-vibrant-pink: var(--clr-pink);
+  --color-vibrant-blue: var(--clr-blue);
+  --color-vibrant-blue-text: var(--clr-blue-text);
+  --color-vibrant-blue-border: var(--clr-blue-border);
+
   /* Fallback color compatibility matches */
-  --color-pastel-cream: #FDFBF7;
-  --color-pastel-rose: #F4DADA;
-  --color-pastel-gold: #E9D5A1;
-  --color-pastel-blue: #D0EAF5;
+  --color-pastel-cream: var(--clr-bg);
+  --color-pastel-rose: var(--clr-pink);
+  --color-pastel-gold: var(--clr-gold);
+  --color-pastel-blue: var(--clr-blue);
+}
+
+:root {
+  --clr-bg: #FDFBF7;
+  --clr-charcoal: #5A5A5A;
+  --clr-dark: #4A4A4A;
+  --clr-gold: #E9D5A1;
+  --clr-gold-text: #8D7A4D;
+  --clr-gold-border: #D4C08D;
+  --clr-pink: #F4DADA;
+  --clr-blue: #D0EAF5;
+  --clr-blue-text: #4A6A7A;
+  --clr-blue-border: #A0CAD5;
+
+  --clr-surface: #ffffff;
+  --clr-surface-muted: #f8f8f5;
+  --clr-text: #4A4A4A;
+  --clr-text-muted: #787878;
+  --clr-border: #e5e5e0;
+}
+
+.dark {
+  --clr-bg: #1a1a2e;
+  --clr-charcoal: #d0d0d8;
+  --clr-dark: #e8e8ee;
+  --clr-gold: #3d3522;
+  --clr-gold-text: #c9b98a;
+  --clr-gold-border: #5a4d2e;
+  --clr-pink: #3d2a2a;
+  --clr-blue: #1a2a3d;
+  --clr-blue-text: #8ab4c9;
+  --clr-blue-border: #2a4a5d;
+
+  --clr-surface: #2a2a3e;
+  --clr-surface-muted: #222236;
+  --clr-text: #e8e8ee;
+  --clr-text-muted: #a0a0b0;
+  --clr-border: #3a3a4e;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #FDFBF7;
-  color: #4A4A4A;
+  background-color: var(--clr-bg);
+  color: var(--clr-dark);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
 }
+
+/* Dark mode overrides for built-in Tailwind utility classes */
+.dark .bg-white { background-color: var(--clr-surface); }
+.dark .bg-stone-50 { background-color: var(--clr-surface-muted); }
+.dark .bg-stone-50\/50 { background-color: color-mix(in srgb, var(--clr-surface-muted) 50%, transparent); }
+.dark .text-stone-400 { color: var(--clr-text-muted); }
+.dark .text-stone-500 { color: var(--clr-text-muted); }
+.dark .text-stone-600 { color: var(--clr-text); }
+.dark .text-stone-800 { color: var(--clr-text); }
+.dark .text-stone-900 { color: var(--clr-text); }
+.dark .text-\[#4A4A4A\] { color: var(--clr-text); }
+.dark .text-\[#4a4a4a\] { color: var(--clr-text); }
+.dark .text-\[#8D7A4D\] { color: var(--clr-gold-text); }
+.dark .text-\[#4A6A7A\] { color: var(--clr-blue-text); }
+.dark .border-stone-100 { border-color: var(--clr-border); }
+.dark .border-stone-200 { border-color: var(--clr-border); }
+.dark .bg-rose-50 { background-color: #3d2020; }
+.dark .border-rose-100 { border-color: #5d3030; }
+.dark .text-rose-500 { color: #e06060; }
+.dark .bg-amber-50 { background-color: #3d3520; }
+.dark .border-amber-100 { border-color: #5d4d2e; }
+.dark .text-amber-700 { color: #d4b060; }
+.dark .bg-green-50 { background-color: #203d20; }
+.dark .border-green-400 { border-color: #4a8a4a; }
+.dark .text-green-600 { color: #6ab86a; }
+.dark .bg-green-100 { background-color: #2a4a2a; }
+.dark .bg-white\/40 { background-color: color-mix(in srgb, var(--clr-surface) 40%, transparent); }
 
 /* Custom scrollbar to keep it soft and round */
 ::-webkit-scrollbar {
@@ -42,11 +110,19 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-track {
   background: #fdfaf2;
 }
+.dark ::-webkit-scrollbar-track {
+  background: #1a1a2e;
+}
 ::-webkit-scrollbar-thumb {
   background: #f1dfde;
   border-radius: 9999px;
 }
+.dark ::-webkit-scrollbar-thumb {
+  background: #3a3a4e;
+}
 ::-webkit-scrollbar-thumb:hover {
   background: #fbcbc9;
 }
-
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #5a5a6e;
+}
