@@ -1,9 +1,6 @@
 import "dotenv/config";
 import express from "express";
 import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-09-30" as any });
 
 const app = express();
 app.use(express.json({ limit: "15mb" }));
@@ -460,6 +457,9 @@ app.post("/api/create-checkout-session", async (req, res) => {
         if (!pkg) {
             return res.status(400).json({ error: "Package not found for: " + subject });
         }
+
+        const { default: Stripe } = await import("stripe");
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-09-30" as any });
 
         const origin = req.headers.origin || `https://${req.headers.host || "thecupidcollectivenursery.me"}`;
         const domain = origin.includes("localhost") || origin.includes("127.0.0.1")
