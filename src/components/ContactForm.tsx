@@ -211,7 +211,7 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
           type="submit"
           disabled={loading}
           className={`w-full flex items-center justify-center gap-2 rounded-full cursor-pointer text-white py-4 text-xs font-bold uppercase tracking-wider transition-all shadow-xs disabled:opacity-50 ${
-            isFormComplete ? "bg-vibrant-pink hover:bg-vibrant-pink/80" : "bg-vibrant-pink/40"
+            isFormComplete ? "bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-600/30" : "bg-vibrant-pink/40"
           }`}
         >
           <CreditCard size={15} />
