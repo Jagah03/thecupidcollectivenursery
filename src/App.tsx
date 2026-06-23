@@ -133,7 +133,13 @@ if (path === "admin") {
                   <div className="w-10 h-10 bg-vibrant-gold rounded-full flex items-center justify-center group-hover:scale-105 transition-transform">
                     <div className="w-6 h-6 bg-white rounded-full opacity-70 flex items-center justify-center">
                       <Baby size={13} className="text-vibrant-charcoal" />
-                    </div>
+</div>
+const resourceSubLinks = [
+  { id: "safety", label: "Support & Safety Resources", href: "/resources/safety" },
+  { id: "hotlines", label: "Crisis Hotlines", href: "/resources/hotlines" },
+  { id: "articles", label: "Guides & Logs", href: "/resources/articles" },
+  { id: "faqs", label: "FAQs Accordion", href: "/resources/faqs" },
+];
                   </div>
                   <div className="space-y-0.5">
                     <span className="text-lg font-extrabold tracking-tight text-vibrant-charcoal block font-display">
@@ -156,21 +162,29 @@ if (path === "admin") {
                     const Icon = tab.icon;
                     const isSel = activeTab === tab.id;
                     return (
-                      <button
-                        key={tab.id}
-                        id={`nav-link-${tab.id}`}
-                        onClick={() => {
-                          navigateToTab(tab.id);
-                          if (tab.id !== "contact") setSelectedPackageSubject("");
-                        }}
-                        className={`flex cursor-pointer items-center gap-1.5 px-2 py-2 text-xs font-bold uppercase tracking-widest transition-all border-b-2 hover:text-vibrant-dark ${isSel
-                            ? "border-vibrant-gold text-vibrant-dark font-extrabold"
-                            : "border-transparent text-stone-500 hover:border-vibrant-gold/40"
-                          }`}
-                      >
-                        <Icon size={12} className={isSel ? "text-vibrant-charcoal" : "text-stone-400"} />
-                        {tab.label}
-                      </button>
+<div key={tab.id} className="relative group">
+  <button
+    id={`nav-link-${tab.id}`}
+    onClick={() => {
+      navigateToTab(tab.id);
+      if (tab.id !== "contact") setSelectedPackageSubject("");
+    }}
+    className={`flex cursor-pointer items-center gap-1.5 px-2 py-2 text-xs font-bold uppercase tracking-widest transition-all border-b-2 hover:text-vibrant-dark ${isSel
+        ? "border-vibrant-gold text-vibrant-dark font-extrabold"
+        : "border-transparent text-stone-500 hover:border-vibrant-gold/40"
+      }`}
+  >
+    <Icon size={12} className={isSel ? "text-vibrant-charcoal" : "text-stone-400"} />
+    {tab.label}
+  </button>
+  {tab.id === "resources" && (
+    <div className="absolute mt-2 left-0 bg-white shadow-lg rounded py-1 hidden group-hover:block z-10">
+      {resourceSubLinks.map(r => (
+        <a key={r.id} href={r.href} className="block px-4 py-2 hover:bg-gray-100">{r.label}</a>
+      ))}
+    </div>
+  )}
+</div>
                     );
                   })}
 
