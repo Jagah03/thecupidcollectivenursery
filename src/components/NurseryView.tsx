@@ -139,31 +139,31 @@ export default function NurseryView({ guidelines, packages, caregivers, onBookPa
         {inPersonPackages.length > 0 && (
           <div className="space-y-6">
             <h3 className="text-xl font-extrabold font-display text-vibrant-charcoal border-l-4 border-vibrant-pink pl-3">In-Person Nursery Session Packages</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {inPersonPackages.map(pkg => (
                 <div
                   key={pkg.id}
                   id={`pkg-card-${pkg.id}`}
-                  className="bg-white border-2 border-vibrant-pink rounded-3xl p-6 flex flex-col justify-between shadow-xs hover:shadow-sm hover:border-vibrant-pink/80 transition-all"
+                  className="bg-white border-2 border-vibrant-pink rounded-3xl p-4 md:p-6 flex flex-col justify-between shadow-xs hover:shadow-sm hover:border-vibrant-pink/80 transition-all"
                 >
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start gap-4">
-                      <h4 className="text-lg font-extrabold text-vibrant-charcoal font-display">{pkg.name}</h4>
-                      <span className="shrink-0 bg-vibrant-pink/30 text-vibrant-dark text-xs px-2.5 py-1 font-bold rounded-lg font-mono">
+                  <div className="space-y-3 md:space-y-4">
+                    <div className="flex justify-between items-start gap-3 md:gap-4">
+                      <h4 className="text-base md:text-lg font-extrabold text-vibrant-charcoal font-display">{pkg.name}</h4>
+                      <span className="shrink-0 bg-vibrant-pink/30 text-vibrant-dark text-[11px] md:text-xs px-2 md:px-2.5 py-1 font-bold rounded-lg font-mono">
                         ${pkg.price}
                       </span>
                     </div>
-                    <p className="text-stone-600 text-xs leading-relaxed font-sans font-medium">{pkg.description}</p>
+                    <p className="text-stone-600 text-[11px] md:text-xs leading-relaxed font-sans font-medium">{pkg.description}</p>
                   </div>
 
-                  <div className="border-t border-stone-100 pt-4 mt-6 flex justify-between items-center bg-stone-50/50 -mx-6 -mb-6 p-4 rounded-b-3xl">
-                    <span className="text-xs text-stone-500 font-semibold flex items-center gap-1 font-mono">
+                  <div className="border-t border-stone-100 pt-3 md:pt-4 mt-4 md:mt-6 flex justify-between items-center bg-stone-50/50 -mx-4 md:-mx-6 -mb-4 md:-mb-6 p-3 md:p-4 rounded-b-3xl">
+                    <span className="text-[11px] md:text-xs text-stone-500 font-semibold flex items-center gap-1 font-mono">
                       <Calendar size={12} className="text-vibrant-gold-text" />
                       {pkg.duration} Min Session
                     </span>
                     <button
                       onClick={() => onBookPackage(`In-Person Package: ${pkg.name}`)}
-                      className="rounded-full cursor-pointer bg-vibrant-charcoal hover:bg-stone-700 text-white font-bold text-xs px-5 py-2.5 shadow-sm transition-all uppercase tracking-wider"
+                      className="rounded-full cursor-pointer bg-vibrant-charcoal hover:bg-stone-700 text-white font-bold text-[11px] md:text-xs px-4 md:px-5 py-2 md:py-2.5 shadow-sm transition-all uppercase tracking-wider"
                     >
                       Book Session
                     </button>
@@ -178,31 +178,31 @@ export default function NurseryView({ guidelines, packages, caregivers, onBookPa
         {virtualPackages.length > 0 && (
           <div className="space-y-6 pt-4">
             <h3 className="text-xl font-extrabold font-display text-vibrant-blue-text border-l-4 border-vibrant-blue-border pl-3">Virtual Distance Packages</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {virtualPackages.map(pkg => (
                 <div
                   key={pkg.id}
                   id={`pkg-card-${pkg.id}`}
-                  className="bg-vibrant-gold rounded-3xl p-6 flex flex-col justify-between border-b-4 border-vibrant-gold-border shadow-xs hover:opacity-95 transition-all"
+                  className="bg-vibrant-gold rounded-3xl p-4 md:p-6 flex flex-col justify-between border-b-4 border-vibrant-gold-border shadow-xs hover:opacity-95 transition-all"
                 >
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start gap-4">
-                      <h4 className="text-lg font-extrabold text-vibrant-charcoal font-display">{pkg.name}</h4>
-                      <span className="shrink-0 bg-white text-vibrant-gold-text text-xs px-2.5 py-1 font-extrabold rounded-lg font-mono">
+                  <div className="space-y-3 md:space-y-4">
+                    <div className="flex justify-between items-start gap-3 md:gap-4">
+                      <h4 className="text-base md:text-lg font-extrabold text-vibrant-charcoal font-display">{pkg.name}</h4>
+                      <span className="shrink-0 bg-white text-vibrant-gold-text text-[11px] md:text-xs px-2 md:px-2.5 py-1 font-extrabold rounded-lg font-mono">
                         ${pkg.price}
                       </span>
                     </div>
-                    <p className="text-vibrant-gold-text text-xs leading-relaxed font-sans font-semibold">{pkg.description}</p>
+                    <p className="text-vibrant-gold-text text-[11px] md:text-xs leading-relaxed font-sans font-semibold">{pkg.description}</p>
                   </div>
 
-                  <div className="border-t border-vibrant-gold-border/30 pt-4 mt-6 flex justify-between items-center bg-white/40 -mx-6 -mb-6 p-4 rounded-b-3xl">
-                    <span className="text-xs text-[#8D7A4D] font-bold flex items-center gap-1 font-mono">
+                  <div className="border-t border-vibrant-gold-border/30 pt-3 md:pt-4 mt-4 md:mt-6 flex justify-between items-center bg-white/40 -mx-4 md:-mx-6 -mb-4 md:-mb-6 p-3 md:p-4 rounded-b-3xl">
+                    <span className="text-[11px] md:text-xs text-[#8D7A4D] font-bold flex items-center gap-1 font-mono">
                       <Compass size={12} className="text-[#8D7A4D]" />
                       {pkg.duration} Mins Online
                     </span>
                     <button
                       onClick={() => onBookPackage(`Virtual Package: ${pkg.name}`)}
-                      className="rounded-full cursor-pointer bg-vibrant-charcoal hover:bg-stone-700 text-white font-bold text-xs px-5 py-2.5 shadow-sm transition-all uppercase tracking-wider"
+                      className="rounded-full cursor-pointer bg-vibrant-charcoal hover:bg-stone-700 text-white font-bold text-[11px] md:text-xs px-4 md:px-5 py-2 md:py-2.5 shadow-sm transition-all uppercase tracking-wider"
                     >
                       Inquire Online
                     </button>
