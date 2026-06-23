@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ContactForm from "./ContactForm";
 import StripeCheckout from "./StripeCheckout";
 
@@ -9,6 +9,55 @@ interface BookingViewProps {
 
 export default function BookingView({ subject, onSuccess }: BookingViewProps) {
   const [stripeLoaded, setStripeLoaded] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"success" | "canceled" | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "true") {
+      setPaymentStatus("success");
+      window.history.replaceState({}, "", "/bookings");
+    } else if (params.get("canceled") === "true") {
+      setPaymentStatus("canceled");
+      window.history.replaceState({}, "", "/bookings");
+    }
+  }, []);
+
+  if (paymentStatus === "success") {
+    return (
+      <div className="max-w-5xl mx-auto py-6 space-y-8">
+        <div className="bg-green-50 border-2 border-green-400 rounded-[32px] p-8 text-center space-y-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
+            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-extrabold font-display text-vibrant-charcoal">Payment Successful!</h2>
+          <p className="text-sm text-stone-600 max-w-md mx-auto">
+            Thank you! Your payment has been received. Our caregivers will be in touch with you shortly to confirm your session details.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (paymentStatus === "canceled") {
+    return (
+      <div className="max-w-5xl mx-auto py-6 space-y-8">
+        <div className="bg-amber-50 border-2 border-amber-400 rounded-[32px] p-8 text-center space-y-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-extrabold font-display text-vibrant-charcoal">Payment Canceled</h2>
+          <p className="text-sm text-stone-600 max-w-md mx-auto">
+            Your payment was canceled. No charges have been made. You can fill out the form again when you&apos;re ready to proceed.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto py-6 space-y-8">
       <div className="space-y-2">
@@ -31,7 +80,6 @@ export default function BookingView({ subject, onSuccess }: BookingViewProps) {
       )}
 
       <ContactForm initialSubject={subject} onSuccess={() => { onSuccess(); setStripeLoaded(false); }} />
-      {/* Stripe payment placeholder */}
       {!stripeLoaded && (
         <StripeCheckout
           subject={subject}

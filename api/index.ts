@@ -1,6 +1,9 @@
 import "dotenv/config";
 import express from "express";
 import { createClient } from "@supabase/supabase-js";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-09-30" as any });
 
 const app = express();
 app.use(express.json({ limit: "15mb" }));
@@ -441,6 +444,49 @@ app.post("/api/newsletter", async (req, res) => {
         res.json({ success: true, message: "Warm welcome to our collective! You are subscribed." });
     } catch (e: any) {
         res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// Create Stripe Checkout Session
+app.post("/api/create-checkout-session", async (req, res) => {
+    try {
+        const { subject } = req.body;
+        if (!subject) {
+            return res.status(400).json({ error: "Missing subject" });
+        }
+
+        const db = await readDB();
+        const pkg = db.packages.find((p: any) => p.name === subject);
+        if (!pkg) {
+            return res.status(400).json({ error: "Package not found for: " + subject });
+        }
+
+        const origin = req.headers.origin || `https://${req.headers.host || "thecupidcollectivenursery.me"}`;
+        const domain = origin.includes("localhost") || origin.includes("127.0.0.1")
+            ? origin
+            : "https://thecupidcollectivenursery.me";
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            mode: "payment",
+            line_items: [
+                {
+                    price_data: {
+                        currency: "usd",
+                        product_data: { name: pkg.name },
+                        unit_amount: Math.round(pkg.price * 100),
+                    },
+                    quantity: 1,
+                },
+            ],
+            success_url: `${domain}/bookings?success=true`,
+            cancel_url: `${domain}/bookings?canceled=true`,
+        });
+
+        res.json({ sessionId: session.id, url: session.url });
+    } catch (e: any) {
+        console.error("Stripe session creation error:", e);
+        res.status(500).json({ error: e.message || "Failed to create checkout session" });
     }
 });
 
