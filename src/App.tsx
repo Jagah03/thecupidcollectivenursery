@@ -14,6 +14,7 @@ import NurseryView from "./components/NurseryView";
 import ResourcesView from "./components/ResourcesView";
 import ContactForm from "./components/ContactForm";
 import AdminPanel from "./components/AdminPanel";
+import BookingView from "./components/BookingView";
 
 export default function App() {
   const [dbData, setDbData] = useState<DBStore | null>(null);
@@ -24,11 +25,13 @@ export default function App() {
   const [isAgeVerified, setIsAgeVerified] = useState(false);
 
   // Active Navigation Tab
-  // Options: "home" | "sessions" | "resources" | "contact" | "admin"
+  // Options: "home" | "sessions" | "resources" | "contact" | "admin" | "bookings"
   const [activeTab, setActiveTab] = useState<string>("home");
 
   // State to support clicking "Book" on a package to auto-populate contact subject
   const [selectedPackageSubject, setSelectedPackageSubject] = useState("");
+  // New tab for booking page
+  const [bookingSubject, setBookingSubject] = useState("");
 
   // Clean navigation helper that updates browser address bar path
   const navigateToTab = (tabName: string) => {
@@ -42,11 +45,17 @@ export default function App() {
   // URL path listener to allow back/forward navigation and direct entry endpoints
   useEffect(() => {
     const handleLocationCheck = () => {
-      const path = window.location.pathname.replace(/^\/|\/$/g, "");
+      const path = window.location.pathname.replace(/^\//, "");
       if (path === "admin") {
         setActiveTab("admin");
-      } else if (path.startsWith("resources") || path === "sessions" || path === "contact") {
+      } else if (path === "sessions" || path.startsWith("nursery")) {
+        setActiveTab("sessions");
+      } else if (path === "contact") {
+        setActiveTab("contact");
+      } else if (path.startsWith("resources")) {
         setActiveTab("resources");
+      } else if (path === "bookings") {
+        setActiveTab("bookings");
       } else {
         setActiveTab("home");
       }
@@ -80,13 +89,16 @@ export default function App() {
   }, []);
 
   const handleBookPackage = (packageSubject: string) => {
-    setSelectedPackageSubject(packageSubject);
-    navigateToTab("contact");
-    // Scroll smoothly to top
+    // Store subject for form pre‑population
+    setBookingSubject(packageSubject);
+    // Navigate to the new bookings page
+    navigateToTab("bookings");
+    // Reset selectedPackageSubject to avoid stale state
+    setSelectedPackageSubject("");
+    // Scroll to top of the booking page
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Safe client static fallbacks if backend load fails temporarily
   const getFallbackSettings = () => ({
     introHeadline: "A Safe, Nurturing Sanctuary for Age-Regression",
     introSubheadline: "Step into a professionally-guided, non-sexual space designed to relieve anxiety and PTSD.",
@@ -115,23 +127,18 @@ export default function App() {
     { id: "safety", label: "Support & Safety Resources", href: "/resources/safety" },
     { id: "hotlines", label: "Crisis Hotlines", href: "/resources/hotlines" },
     { id: "articles", label: "Guides & Logs", href: "/resources/articles" },
-    { id: "faqs", label: "FAQs Accordion", href: "/resources/faqs" },
+    { id: "faqs", label: "FAQs Accordion", href: "/resources/faqs" }
   ];
 
   return (
     <div id="application-root" className="min-h-screen flex flex-col bg-vibrant-bg text-[#4A4A4A] antialiased font-sans transition-colors selection:bg-vibrant-pink/40 selection:text-vibrant-charcoal">
-
-      {/* 1. AGEGATE PROTECTION */}
       <AgeGate onVerify={() => setIsAgeVerified(true)} />
 
-      {/* RENDER REST OF APP ONLY ONCE AGE VERIFIED */}
       {isAgeVerified && (
         <>
-          {/* Top Header Navigation */}
           <header id="main-header" className="sticky top-0 z-50 bg-vibrant-bg/95 backdrop-blur-md border-b border-vibrant-pink/30 shadow-xs">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center h-20">
-                {/* Branding Brand logo */}
                 <div
                   id="header-brand"
                   onClick={() => navigateToTab("home")}
@@ -151,8 +158,6 @@ export default function App() {
                     </span>
                   </div>
                 </div>
-
-                {/* Desktop Tabs menu */}
                 <nav id="desktop-routing-links" className="hidden md:flex items-center gap-6">
                   {[
                     { id: "home", label: "Home", icon: Home },
@@ -188,25 +193,15 @@ export default function App() {
                       </div>
                     );
                   })}
-
-                  <div className="h-4 w-px bg-stone-200 mx-1" />
-
-                  <span className="text-[10px] font-bold px-2.5 py-1 bg-vibrant-blue rounded text-vibrant-blue-text select-none uppercase tracking-wide">
-                    18+ CERTIFIED
-                  </span>
                 </nav>
-
-                {/* Mobile Tab Quick Nav buttons */}
-                <div className="flex md:hidden items-center gap-2">
-                  <span className="text-[9px] font-semibold px-2 py-1 bg-vibrant-blue rounded text-vibrant-blue-text">
-                    18+
-                  </span>
-                </div>
+                <div className="h-4 w-px bg-stone-200 mx-1" />
+                <span className="text-[10px] font-bold px-2.5 py-1 bg-vibrant-blue rounded text-vibrant-blue-text select-none uppercase tracking-wide">
+                  18+ CERTIFIED
+                </span>
               </div>
             </div>
           </header>
 
-          {/* Fallback connection warnings if error */}
           {errorState && (
             <div className="bg-amber-50 border-b border-amber-100 py-3 text-center px-4">
               <p className="text-xs text-amber-700 font-medium">
@@ -215,7 +210,6 @@ export default function App() {
             </div>
           )}
 
-          {/* MAIN CONTAINER STREAM */}
           <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <AnimatePresence mode="wait">
               <motion.div
@@ -261,6 +255,13 @@ export default function App() {
                   />
                 )}
 
+                {activeTab === "bookings" && (
+                  <BookingView
+                    subject={bookingSubject}
+                    onSuccess={() => setBookingSubject("")}
+                  />
+                )}
+
                 {activeTab === "admin" && (
                   <AdminPanel />
                 )}
@@ -268,7 +269,6 @@ export default function App() {
             </AnimatePresence>
           </main>
 
-          {/* Bottom Footer block */}
           <footer id="main-footer" className="bg-white border-t border-vibrant-pink/50 py-12 mt-16 text-center">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
               <div className="flex justify-center items-center gap-1 text-vibrant-charcoal">
@@ -277,19 +277,9 @@ export default function App() {
                   Comfort. Heal. Grow.
                 </span>
               </div>
-
               <p className="text-xs text-stone-500 max-w-2xl mx-auto leading-relaxed">
                 The Cupid Collective Nursery is a professional website providing informational coping and age-regression counseling guidelines. We are **100% platonic, ethical, and strictly secure**. No sexual behaviors, implications, or services are provided under any terms.
               </p>
-
-
-              <div className="border-t border-vibrant-pink/20 pt-6 text-[10px] text-stone-400 font-mono flex flex-col sm:flex-row justify-between gap-4 max-w-4xl mx-auto">
-                <p>© 2026 The Cupid Collective Nursery. All Rights Protected.</p>
-                <div className="flex items-center justify-center gap-1.5 text-stone-400 font-medium">
-                  <ShieldCheck size={14} className="text-[#4A6A7A]" />
-                  ID-Verified & Secure Consultation Standards
-                </div>
-              </div>
             </div>
           </footer>
         </>
