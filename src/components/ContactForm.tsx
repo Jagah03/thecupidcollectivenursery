@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Send, Shield, Sparkles, Smile, Info, CheckCircle2 } from "lucide-react";
+import { Send, Shield, Sparkles, Smile, Info, CreditCard } from "lucide-react";
 
 interface ContactFormProps {
   initialSubject?: string;
@@ -17,7 +17,6 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
   });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [successStatus, setSuccessStatus] = useState(false);
 
   useEffect(() => {
     if (initialSubject) {
@@ -25,10 +24,10 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
     }
   }, [initialSubject]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handlePayClick = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
-    
+
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
       setErrorMessage("Please complete all required fields (marked *).");
       return;
@@ -42,66 +41,48 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
     setLoading(true);
 
     try {
-      const res = await fetch("/api/inquiries", {
+      const inquiryRes = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
       });
-      const data = await res.json();
-      
-      if (data.success) {
-        setSuccessStatus(true);
-        setFormData({
-          name: "",
-          pronouns: "",
-          email: "",
-          subject: "",
-          message: "",
-          agreedBoundaries: false
-        });
-        if (onSuccess) onSuccess();
-      } else {
-        setErrorMessage(data.error || "Submission failed. Please check form inputs.");
+      const inquiryData = await inquiryRes.json();
+
+      if (!inquiryData.success) {
+        throw new Error(inquiryData.error || "Inquiry submission failed.");
       }
-    } catch (err) {
-      setErrorMessage("No network connection. Our server could not be reached.");
+
+      onSuccess();
+
+      const checkoutRes = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: formData.subject })
+      });
+      const checkoutData = await checkoutRes.json();
+
+      if (!checkoutRes.ok || !checkoutData.url) {
+        throw new Error(checkoutData.error || "Failed to create checkout session. Your inquiry was saved.");
+      }
+
+      window.location.href = checkoutData.url;
+    } catch (err: any) {
+      setErrorMessage(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (successStatus) {
-    return (
-      <div id="contact-success-card" className="max-w-xl mx-auto bg-white border-2 border-vibrant-pink rounded-[40px] p-8 text-center space-y-6 shadow-xs my-12">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-vibrant-pink/10 text-vibrant-pink animate-pulse">
-          <CheckCircle2 size={32} />
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-2xl font-extrabold font-display text-vibrant-charcoal">Inquiry Received Comfortingly!</h2>
-          <p className="text-sm text-stone-500 max-w-sm mx-auto leading-relaxed">
-            Your inquiry has been stored securely in our centralized admin logs. Mommy or Nanny will review it confidentially and reach out to you via email shortly.
-          </p>
-        </div>
-        <button
-          onClick={() => setSuccessStatus(false)}
-          className="rounded-full cursor-pointer bg-vibrant-charcoal text-white font-bold text-xs uppercase tracking-wider px-6 py-3.5 shadow-sm hover:bg-stone-700 transition"
-        >
-          Send Another Message
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div id="contact-form-container" className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-5xl mx-auto py-4">
-      
+
       {/* Informational Guidelines Card */}
       <div className="lg:col-span-4 bg-vibrant-bg p-6 rounded-[32px] border-4 border-vibrant-pink shadow-xs space-y-6 self-start">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-vibrant-pink text-white shadow-xs">
           <Info size={20} />
         </div>
         <h3 className="text-xl font-extrabold text-vibrant-charcoal font-display">Booking Procedures</h3>
-        
+
         <div className="space-y-4 text-xs text-stone-600 leading-relaxed font-sans font-medium">
           <div className="flex gap-2">
             <Smile size={16} className="text-vibrant-gold-text shrink-0 mt-0.5" />
@@ -123,7 +104,7 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
       </div>
 
       {/* Actual Form Fields */}
-      <form onSubmit={handleSubmit} className="lg:col-span-8 bg-white p-8 rounded-[32px] border-2 border-vibrant-pink shadow-xs space-y-6">
+      <form onSubmit={handlePayClick} className="lg:col-span-8 bg-white p-8 rounded-[32px] border-2 border-vibrant-pink shadow-xs space-y-6">
         <div className="space-y-2 mb-2">
           <h2 className="text-2xl font-extrabold font-display text-vibrant-charcoal">Private Nursery Inquiry</h2>
           <p className="text-xs text-stone-400 leading-relaxed font-semibold">Please state your therapeutic comfort goals so staff can configure agreements.</p>
@@ -217,15 +198,15 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
           </div>
         </div>
 
-        {/* Submission Button */}
+        {/* Stripe Payment Button */}
         <button
-          id="send-inquiry-btn"
+          id="pay-with-stripe-btn"
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 rounded-full cursor-pointer bg-vibrant-charcoal hover:bg-stone-700 text-white py-4 text-xs font-bold uppercase tracking-wider transition-all shadow-xs disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 rounded-full cursor-pointer bg-vibrant-pink hover:bg-vibrant-pink/80 text-white py-4 text-xs font-bold uppercase tracking-wider transition-all shadow-xs disabled:opacity-50"
         >
-          <Send size={15} />
-          {loading ? "Sending securely..." : "Submit Inquiry Confidential"}
+          <CreditCard size={15} />
+          {loading ? "Processing…" : "Pay with Stripe & Submit"}
         </button>
       </form>
     </div>

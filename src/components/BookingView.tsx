@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import ContactForm from "./ContactForm";
-import StripeCheckout from "./StripeCheckout";
 
 interface BookingViewProps {
   subject: string;
@@ -79,7 +78,6 @@ export default function BookingView({ subject, onSuccess }: BookingViewProps) {
       )}
 
       <ContactForm initialSubject={subject} onSuccess={() => { onSuccess(); }} />
-      <StripeCheckout subject={subject} />
     </div>
   );
 }
