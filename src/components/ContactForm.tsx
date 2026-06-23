@@ -18,6 +18,13 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const isFormComplete =
+    formData.name.trim() &&
+    formData.email.trim() &&
+    formData.subject.trim() &&
+    formData.message.trim() &&
+    formData.agreedBoundaries;
+
   useEffect(() => {
     if (initialSubject) {
       setFormData(prev => ({ ...prev, subject: initialSubject }));
@@ -203,7 +210,9 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
           id="pay-with-stripe-btn"
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 rounded-full cursor-pointer bg-vibrant-pink hover:bg-vibrant-pink/80 text-white py-4 text-xs font-bold uppercase tracking-wider transition-all shadow-xs disabled:opacity-50"
+          className={`w-full flex items-center justify-center gap-2 rounded-full cursor-pointer text-white py-4 text-xs font-bold uppercase tracking-wider transition-all shadow-xs disabled:opacity-50 ${
+            isFormComplete ? "bg-vibrant-pink hover:bg-vibrant-pink/80" : "bg-vibrant-pink/40"
+          }`}
         >
           <CreditCard size={15} />
           {loading ? "Processing…" : "Pay with Stripe & Submit"}
