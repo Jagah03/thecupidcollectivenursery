@@ -460,7 +460,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
         }
 
         const { default: Stripe } = await import("stripe");
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-09-30" as any });
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
         const origin = req.headers.origin || `https://${req.headers.host || "thecupidcollectivenursery.me"}`;
         const domain = origin.includes("localhost") || origin.includes("127.0.0.1")

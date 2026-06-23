@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { DBStore, GlobalSettings, NurseryGuidelines, NurseryPackage, Caregiver, BlogArticle, SafetyAlert, MentalHealthResource, FAQItem, Testimonial, Inquiry } from "./src/types";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-09-30" as any });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 const app = express();
 const PORT = 3000;
