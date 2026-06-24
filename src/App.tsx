@@ -187,10 +187,18 @@ export default function App() {
                           {tab.label}
                         </button>
                         {tab.id === "resources" && (
-                          <div className="absolute mt-2 left-0 bg-white shadow-lg rounded py-1 hidden group-hover:block z-10">
-                            {resourceSubLinks.map(r => (
-                              <a key={r.id} href={r.href} className="block px-4 py-2 hover:bg-gray-100">{r.label}</a>
-                            ))}
+                          <div className="absolute top-full left-0 pt-2 hidden group-hover:block z-50">
+                            <div className="bg-vibrant-bg border border-vibrant-pink/30 shadow-xl rounded-2xl py-1 min-w-56 overflow-hidden">
+                              {resourceSubLinks.map(r => (
+                                <a
+                                  key={r.id}
+                                  href={r.href}
+                                  className="block px-4 py-2.5 text-xs font-bold text-stone-700 hover:bg-vibrant-pink/30 hover:text-vibrant-dark transition-colors"
+                                >
+                                  {r.label}
+                                </a>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
