@@ -55,7 +55,8 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-5xl mx-auto py-4">
-      <div className="lg:col-span-4 bg-vibrant-bg p-6 rounded-[32px] border-4 border-vibrant-pink shadow-xs space-y-6 self-start">
+      {!submitted && (
+        <div className="lg:col-span-4 bg-vibrant-bg p-6 rounded-[32px] border-4 border-vibrant-pink shadow-xs space-y-6 self-start">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-vibrant-pink text-white shadow-xs">
           <Info size={20} />
         </div>
@@ -64,6 +65,7 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
           Submit a private request without payment.
         </p>
       </div>
+      )}
 
       {submitted ? (
         <div className="lg:col-span-8 bg-white p-8 rounded-[32px] border-2 border-vibrant-pink shadow-xs space-y-6 flex flex-col items-center text-center">
@@ -85,6 +87,8 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
           <h2 className="text-2xl font-extrabold font-display text-vibrant-charcoal">Private Nursery Inquiry</h2>
           <p className="text-xs text-stone-400 leading-relaxed font-semibold">Provide details for a private, non‑payment inquiry.</p>
         </div>
+      )}
+      )}
         {errorMessage && (
           <div className="rounded-xl bg-rose-50 border border-rose-100 p-3 text-xs font-semibold text-rose-500">
             {errorMessage}
