@@ -1414,8 +1414,8 @@ export default function AdminPanel() {
             <div className="space-y-6">
               <div className="flex justify-between items-center bg-stone-50 -mx-6 md:-mx-8 -mt-6 md:-mt-8 p-5 rounded-t-3xl border-b border-stone-100">
                 <div>
-                  <h3 className="text-lg font-bold font-display text-stone-850">Private Inquiry Logs</h3>
-                  <p className="text-xs text-stone-450 mt-0.5">Read private booking proposals, pronouns, fantasies, and special requests submitted.</p>
+                  <h3 className="text-lg font-bold font-display text-stone-850 dark:text-white">Private Inquiry Logs</h3>
+                  <p className="text-xs text-stone-450 mt-0.5 dark:text-stone-300">Read private booking proposals, pronouns, fantasies, and special requests submitted.</p>
                 </div>
                 <span className="bg-rose-100 text-rose-500 font-bold px-3 py-1 rounded-full text-xs font-mono shrink-0">
                   Total: {db.privateInquiries?.length || 0} Entries
@@ -1433,10 +1433,10 @@ export default function AdminPanel() {
                       }`}
                     >
 <div className="space-y-2">
-                      <h4 className="text-sm font-bold text-stone-850">{inq.name}</h4>
+                      <h4 className="text-sm font-bold text-stone-850 dark:text-white">{inq.name}</h4>
                       <span className="text-[10px] font-mono bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">{inq.pronouns}</span>
                       {!inq.read && <span className="bg-rose-500 text-white font-bold text-[8px] font-mono uppercase px-2 py-0.5 rounded-full">New</span>}
-                      <p className="text-xs text-stone-450 font-mono">Email: <a href={`mailto:${inq.email}`} className="text-indigo-500 underline hover:text-indigo-600">{inq.email}</a></p>
+                      <p className="text-xs text-stone-450 font-mono dark:text-stone-300">Email: <a href={`mailto:${inq.email}`} className="text-indigo-500 underline hover:text-indigo-600">{inq.email}</a></p>
                       <p className="text-xs text-stone-500 font-semibold leading-relaxed">Fantasy: <span className="text-stone-800">{inq.fantasy}</span></p>
                       <p className="text-xs text-stone-500 font-semibold leading-relaxed">Special Request: <span className="text-stone-800">{inq.specialRequest}</span></p>
                       <p className="text-[10px] font-mono text-stone-400">{new Date(inq.date).toLocaleString()}</p>
