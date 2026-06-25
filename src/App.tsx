@@ -174,13 +174,7 @@ export default function App() {
                     <span className="text-[7px] md:text-[9px] uppercase tracking-widest font-mono font-bold text-vibrant-gold-text block leading-none">
                       Therapeutic Nursery
 </span>
-                  <button
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    className="md:hidden p-2 rounded-full hover:bg-vibrant-pink/40 transition-colors"
-                    aria-label="Toggle mobile menu"
-                  >
-                    <Menu size={20} className="text-vibrant-charcoal" />
-                  </button>
+
                 </div>
                 </div>
                 <nav id="desktop-routing-links" className="hidden md:flex items-center gap-6">
@@ -227,18 +221,25 @@ export default function App() {
                     );
                   })}
                 </nav>
-                <button
-                  onClick={toggle}
-                  className="cursor-pointer p-2 rounded-full hover:bg-vibrant-pink/40 transition-colors"
-                  aria-label="Toggle dark mode"
-                  title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-                >
-                  {isDark ? <Sun size={16} className="text-vibrant-gold-text" /> : <Moon size={16} className="text-vibrant-charcoal" />}
-                </button>
-                <div className="h-4 w-px bg-stone-200 mx-1" />
-                <span className="text-[7px] md:text-[10px] font-bold px-1.5 md:px-2.5 py-0.5 md:py-1 bg-vibrant-blue rounded text-vibrant-blue-text select-none uppercase tracking-wide">
-                  18+ CERTIFIED
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={toggle}
+                    className="p-1 rounded-full hover:bg-vibrant-pink/40 transition-colors"
+                    aria-label="Toggle dark mode"
+                  >
+                    {isDark ? <Sun size={16} className="text-vibrant-gold-text" /> : <Moon size={16} className="text-vibrant-charcoal" />}
+                  </button>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 bg-vibrant-blue rounded text-vibrant-blue-text uppercase select-none">
+                    18+
+                  </span>
+                  <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className="md:hidden p-1 rounded-full hover:bg-vibrant-pink/40 transition-colors"
+                    aria-label="Toggle mobile menu"
+                  >
+                    <Menu size={20} className="text-vibrant-charcoal" />
+                  </button>
+                </div>
               </div>
             </div>
           </header>
