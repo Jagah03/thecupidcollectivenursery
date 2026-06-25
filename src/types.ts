@@ -92,8 +92,6 @@ export interface Inquiry {
   paymentStatus?: "pending" | "success" | "canceled";
   amountPaid?: number;
 
-  paymentStatus?: "pending" | "success" | "canceled";
-  amountPaid?: number;
   id: string;
   name: string;
   pronouns: string;
