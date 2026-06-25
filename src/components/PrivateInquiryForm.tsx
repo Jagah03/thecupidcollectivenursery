@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { CheckCircle } from "lucide-react";
 import { Send, Info, CreditCard } from "lucide-react";
 
 interface PrivateInquiryFormProps {
@@ -15,6 +16,8 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
   });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
 
   const isFormComplete =
     formData.name.trim() &&
@@ -41,6 +44,8 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
         throw new Error(data.error || "Submission failed.");
       }
       onSuccess();
+        setSubmittedEmail(formData.email);
+        setSubmitted(true);
     } catch (err: any) {
       setErrorMessage(err.message || "Something went wrong.");
     } finally {
@@ -60,7 +65,22 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="lg:col-span-8 bg-white p-8 rounded-[32px] border-2 border-vibrant-pink shadow-xs space-y-6">
+      {submitted ? (
+        <div className="lg:col-span-8 bg-white p-8 rounded-[32px] border-2 border-vibrant-pink shadow-xs space-y-6 flex flex-col items-center text-center">
+          <CheckCircle size={48} className="mx-auto text-emerald-600 animate-bounce" />
+          <h2 className="mt-4 text-2xl font-extrabold font-display text-vibrant-charcoal dark:text-white">Inquiry Sent!</h2>
+          <p className="mt-2 text-xs text-stone-400 dark:text-stone-300">
+            Thank you for reaching out. Our caregivers have received your private inquiry and will be in touch with you soon.
+          </p>
+          <div className="mt-2 inline-block bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-xs dark:bg-rose-200 dark:text-rose-800">
+            We'll reach out to: {submittedEmail}
+          </div>
+          <a href="/" className="mt-4 w-full flex items-center justify-center rounded-full bg-rose-600 text-white py-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-rose-700">
+            Back to Home
+          </a>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="lg:col-span-8 bg-white p-8 rounded-[32px] border-2 border-vibrant-pink shadow-xs space-y-6">
         <div className="space-y-2 mb-2">
           <h2 className="text-2xl font-extrabold font-display text-vibrant-charcoal">Private Nursery Inquiry</h2>
           <p className="text-xs text-stone-400 leading-relaxed font-semibold">Provide details for a private, non‑payment inquiry.</p>
@@ -138,7 +158,7 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
         >
           {loading ? "Processing…" : "Submit Inquiry"}
         </button>
-      </form>
+      </form> ) }
     </div>
   );
 }
