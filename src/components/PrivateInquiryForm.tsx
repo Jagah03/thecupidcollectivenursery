@@ -62,10 +62,11 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
         </div>
         <h3 className="text-xl font-extrabold text-vibrant-charcoal font-display">Private Inquiry</h3>
         <p className="text-xs text-stone-600 leading-relaxed font-sans font-medium">
-          Submit a private request without payment.
-        </p>
-      </div>
-      )}
+            Submit a private request without payment.
+          </p>
+        </div>
+        )}
+
 
       {submitted ? (
         <div className="lg:col-span-8 bg-white p-8 rounded-[32px] border-2 border-vibrant-pink shadow-xs space-y-6 flex flex-col items-center text-center">
@@ -87,8 +88,8 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
           <h2 className="text-2xl font-extrabold font-display text-vibrant-charcoal">Private Nursery Inquiry</h2>
           <p className="text-xs text-stone-400 leading-relaxed font-semibold">Provide details for a private, non‑payment inquiry.</p>
         </div>
-      )}
-      )}
+
+
         {errorMessage && (
           <div className="rounded-xl bg-rose-50 border border-rose-100 p-3 text-xs font-semibold text-rose-500">
             {errorMessage}
@@ -104,7 +105,7 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
               onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="e.g., Coby (Little Coby)"
               required
-              className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-[#4A4A4A] font-medium"
+              className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium"
             />
           </div>
           {/* Pronouns */}
@@ -115,7 +116,7 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
               value={formData.pronouns}
               onChange={e => setFormData(prev => ({ ...prev, pronouns: e.target.value }))}
               placeholder="e.g., He / Little Him"
-              className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-[#4A4A4A] font-medium"
+              className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium"
             />
           </div>
         </div>
@@ -128,7 +129,7 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
             onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
             placeholder="e.g., mail@example.com"
             required
-            className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-[#4A4A4A] font-medium"
+            className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium"
           />
         </div>
         {/* Fantasy */}
@@ -140,7 +141,7 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
             onChange={e => setFormData(prev => ({ ...prev, fantasy: e.target.value }))}
             placeholder="e.g., Virtual storytime with a caregiver"
             required
-            className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-[#4A4A4A] font-medium"
+            className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium"
           />
         </div>
         {/* Special Request */}
@@ -152,7 +153,7 @@ export default function PrivateInquiryForm({ onSuccess }: PrivateInquiryFormProp
             placeholder="Any additional details or requirements"
             rows={4}
             required
-            className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-[#4A4A4A] font-medium"
+            className="w-full rounded-xl bg-vibrant-bg outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold focus:border-vibrant-gold-border border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium"
           />
         </div>
         <button
