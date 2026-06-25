@@ -268,11 +268,12 @@ export default function App() {
                   />
                 )}
 
-{activeTab === "contact" && (
-                <PrivateInquiryForm
-                  onSuccess={() => setSelectedPackageSubject("")}
-                />
-              )}
+                {activeTab === "contact" && (
+                  <ContactForm
+                    initialSubject={selectedPackageSubject}
+                    onSuccess={() => setSelectedPackageSubject("")}
+                  />
+                )}
 
                 {activeTab === "bookings" && (
                   <BookingView
