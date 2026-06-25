@@ -77,7 +77,23 @@ export interface Testimonial {
   role: string; // e.g., "Little", "Virtual Client"
 }
 
+export interface PrivateInquiry {
+  id: string;
+  name: string;
+  pronouns: string;
+  email: string;
+  fantasy: string;
+  specialRequest: string;
+  date: string;
+  read: boolean;
+}
+
 export interface Inquiry {
+  paymentStatus?: "pending" | "success" | "canceled";
+  amountPaid?: number;
+
+  paymentStatus?: "pending" | "success" | "canceled";
+  amountPaid?: number;
   id: string;
   name: string;
   pronouns: string;
@@ -105,5 +121,6 @@ export interface DBStore {
   faqs: FAQItem[];
   testimonials: Testimonial[];
   inquiries: Inquiry[];
+  privateInquiries: PrivateInquiry[];
   mailingList: MailingListEntry[];
 }

@@ -13,6 +13,7 @@ import HomeView from "./components/HomeView";
 import NurseryView from "./components/NurseryView";
 import ResourcesView from "./components/ResourcesView";
 import ContactForm from "./components/ContactForm";
+import PrivateInquiryForm from "./components/PrivateInquiryForm";
 import AdminPanel from "./components/AdminPanel";
 import BookingView from "./components/BookingView";
 import { useTheme } from "./contexts/ThemeContext";

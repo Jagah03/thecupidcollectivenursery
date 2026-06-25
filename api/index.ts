@@ -312,6 +312,7 @@ function getDefaultDB(): DBStore {
             }
         ],
         inquiries: [],
+        privateInquiries: [],
         mailingList: []
     };
 }
@@ -425,6 +426,31 @@ app.post("/api/inquiries", async (req, res) => {
     } catch (e: any) {
         res.status(500).json({ success: false, error: e.message });
     }
+});
+
+// Private Inquiry (no payment)
+app.post("/api/private-inquiries", async (req, res) => {
+  try {
+    const { name, pronouns, email, fantasy, specialRequest } = req.body;
+    if (!name || !email || !fantasy || !specialRequest) {
+      return res.status(400).json({ success: false, error: "Missing required fields." });
+    }
+    const db = await readDB();
+    db.privateInquiries.push({
+      id: "pinq-" + Date.now(),
+      name: String(name).slice(0, 100),
+      pronouns: String(pronouns || "Not specified").slice(0, 50),
+      email: String(email).slice(0, 100),
+      fantasy: String(fantasy).slice(0, 500),
+      specialRequest: String(specialRequest).slice(0, 2000),
+      date: new Date().toISOString(),
+      read: false
+    });
+    await writeDB(db);
+    res.json({ success: true, message: "Private inquiry saved." });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
 });
 
 app.post("/api/newsletter", async (req, res) => {
@@ -744,6 +770,22 @@ app.post("/api/admin/inquiries/:id/read", adminAuthGate, async (req, res) => {
     } catch (e: any) {
         res.status(500).json({ success: false, error: e.message });
     }
+});
+
+// Toggle read flag for private inquiries
+app.post("/api/admin/private-inquiries/:id/read", adminAuthGate, async (req, res) => {
+  try {
+    const db = await readDB();
+    const index = db.privateInquiries.findIndex(i => i.id === req.params.id);
+    if (index >= 0) {
+      db.privateInquiries[index].read = !!req.body.read;
+      await writeDB(db);
+      return res.json({ success: true });
+    }
+    res.status(404).json({ success: false, error: "Private inquiry not found." });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
 });
 
 app.get("/api/admin/mailing-list/export", adminAuthGate, async (req, res) => {
