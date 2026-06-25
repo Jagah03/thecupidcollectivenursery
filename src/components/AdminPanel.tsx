@@ -442,6 +442,26 @@ export default function AdminPanel() {
     }
   };
 
+  const handleDeletePrivate = async (id: string) => {
+    if (!token) return;
+    if (!confirm('Delete this private inquiry permanently?')) return;
+    try {
+      const res = await fetch(`/api/admin/private-inquiries/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: token },
+      });
+      const data = await res.json();
+      if (data.success) {
+        showStatus('success', 'Private inquiry removed.');
+        fetchAdminData();
+      } else {
+        showStatus('error', data.error || 'Failed to delete.');
+      }
+    } catch (e: any) {
+      showStatus('error', e.message || 'Network error.');
+    }
+  };
+
   const triggerExportCSV = () => {
     if (!token) return;
     window.open(`/api/admin/mailing-list/export?authorization=${token}`);
@@ -1408,7 +1428,7 @@ export default function AdminPanel() {
                     <div
                       key={inq.id}
                       id={`inquiry-log-item-${inq.id}`}
-                      className={`border rounded-2xl p-5 space-y-4 relative overflow-hidden bg-white shadow-sm transition-all ${
+                      className={`w-full border rounded-2xl p-5 space-y-4 relative overflow-hidden bg-white shadow-sm transition-all ${
                         inq.read ? "border-stone-100 opacity-75" : "border-pink-200 outline-2 outline-pink-50"
                       }`}
                     >
@@ -1425,14 +1445,21 @@ export default function AdminPanel() {
                         </div>
                         <div className="text-right space-y-1 shrink-0">
                           <span className="text-[10px] font-mono text-stone-400 block">{new Date(inq.date).toLocaleString()}</span>
-                          <button
-                            onClick={() => togglePrivateRead(inq.id, inq.read)}
-                            className={`px-3 py-1 text-[10px] font-semibold rounded-lg border transition ${
-                              inq.read ? "bg-stone-50 text-stone-500 hover:bg-stone-100" : "bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100"
-                            }`}
-                          >
-                            Mark {inq.read ? "Unread" : "Archived / Read"}
-                          </button>
+<button
+                              onClick={() => togglePrivateRead(inq.id, inq.read)}
+                              className={`px-3 py-1 text-[10px] font-semibold rounded-lg border transition ${
+                                inq.read ? "bg-stone-50 text-stone-500 hover:bg-stone-100" : "bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100"
+                              }`}
+                            >
+                              Mark {inq.read ? "Unread" : "Archived / Read"}
+                            </button>
+                            <button
+                              onClick={() => handleDeletePrivate(inq.id)}
+                              className="ml-2 text-red-600 hover:text-red-800"
+                              title="Delete this inquiry"
+                            >
+                              <Trash2 size={14} />
+                            </button>
                         </div>
                       </div>
                     </div>

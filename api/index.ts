@@ -810,6 +810,22 @@ app.post("/api/admin/private-inquiries/:id/read", adminAuthGate, async (req, res
   }
 });
 
+// Delete a single private inquiry
+app.delete("/api/admin/private-inquiries/:id", adminAuthGate, async (req, res) => {
+  try {
+    const db = await readDB();
+    const before = db.privateInquiries.length;
+    db.privateInquiries = db.privateInquiries.filter(i => i.id !== req.params.id);
+    if (db.privateInquiries.length === before) {
+      return res.status(404).json({ success: false, error: "Private inquiry not found." });
+    }
+    await writeDB(db);
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 app.get("/api/admin/mailing-list/export", adminAuthGate, async (req, res) => {
     try {
         const db = await readDB();
