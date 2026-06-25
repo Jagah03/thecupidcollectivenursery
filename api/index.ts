@@ -338,9 +338,13 @@ async function readDB(): Promise<DBStore> {
             if (error) {
                 console.warn("Supabase query warning:", error.message);
                 return getDefaultDB();
-            } else if (data && data.data) {
-                return data.data as DBStore;
-            } else {
+} else if (data && data.data) {
+                  // Ensure new collections exist for older DB versions
+                  const db = data.data as DBStore;
+                  if (!Array.isArray(db.privateInquiries)) db.privateInquiries = [];
+                  if (!Array.isArray(db.inquiries)) db.inquiries = [];
+                  return db;
+                } else {
                 console.log("Supabase row 'cupid_db_store' not found. Initializing with default db configuration...");
                 const defaultData = getDefaultDB();
                 await writeDBToSupabase(defaultData);
@@ -430,6 +434,32 @@ app.post("/api/inquiries", async (req, res) => {
 
 // Private Inquiry (no payment)
 app.post("/api/private-inquiries", async (req, res) => {
+  try {
+    const { name, pronouns, email, fantasy, specialRequest } = req.body;
+    if (!name || !email || !fantasy || !specialRequest) {
+      return res.status(400).json({ success: false, error: "Missing required fields." });
+    }
+    const db = await readDB();
+    // Ensure array exists for older DB versions
+    if (!Array.isArray(db.privateInquiries)) {
+      db.privateInquiries = [];
+    }
+    db.privateInquiries.push({
+      id: "pinq-" + Date.now(),
+      name: String(name).slice(0, 100),
+      pronouns: String(pronouns || "Not specified").slice(0, 50),
+      email: String(email).slice(0, 100),
+      fantasy: String(fantasy).slice(0, 500),
+      specialRequest: String(specialRequest).slice(0, 2000),
+      date: new Date().toISOString(),
+      read: false
+    });
+    await writeDB(db);
+    res.json({ success: true, message: "Private inquiry saved." });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
   try {
     const { name, pronouns, email, fantasy, specialRequest } = req.body;
     if (!name || !email || !fantasy || !specialRequest) {
