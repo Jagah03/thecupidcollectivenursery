@@ -92,6 +92,17 @@ interface Inquiry {
   read: boolean;
 }
 
+interface PrivateInquiry {
+  id: string;
+  name: string;
+  pronouns: string;
+  email: string;
+  fantasy: string;
+  specialRequest: string;
+  date: string;
+  read: boolean;
+}
+
 interface DBStore {
   globalSettings: GlobalSettings;
   nurseryGuidelines: NurseryGuidelines;
@@ -103,6 +114,7 @@ interface DBStore {
   faqs: FAQItem[];
   testimonials: Testimonial[];
   inquiries: Inquiry[];
+  privateInquiries: PrivateInquiry[];
   mailingList: Array<{ email: string; date: string }>;
 }
 
