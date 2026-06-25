@@ -123,8 +123,9 @@ let supabaseClient: any = null;
 function getSupabase() {
     if (!supabaseClient) {
         const url = process.env.SUPABASE_URL || "";
-        const key = process.env.SUPABASE_KEY || "";
-        if (url && key && url !== "MY_SUPABASE_URL" && key !== "MY_SUPABASE_KEY" && url.trim() !== "" && key.trim() !== "") {
+        const key = process.env.SUPABASE_SERVICE_ROLE_KEY ||
+                process.env.SUPABASE_KEY || "";
+        if (url && key && url !== "MY_SUPABASE_URL" && key !== "MY_SUPABASE_KEY" && url.trim() !== "" && key.trim() !== "" && process.env.SUPABASE_SERVICE_ROLE_KEY !== "MY_SUPABASE_SERVICE_ROLE_KEY") {
             supabaseClient = createClient(url, key);
         }
     }
@@ -378,7 +379,7 @@ async function writeDB(data: DBStore) {
             console.error("Supabase write exception:", err.message);
         }
     } else {
-        console.warn("Supabase is not initialized. Cannot persist writeDB.");
+        console.error("writeDB: Supabase client not initialized. Check SUPABASE_SERVICE_ROLE_KEY env var.");
     }
 }
 
