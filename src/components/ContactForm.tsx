@@ -113,7 +113,7 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
       {/* Actual Form Fields */}
       <form onSubmit={handlePayClick} className="lg:col-span-8 bg-white p-8 rounded-[32px] border-2 border-vibrant-pink shadow-xs space-y-6">
         <div className="space-y-2 mb-2">
-          <h2 className="text-2xl font-extrabold font-display text-vibrant-charcoal">Private Nursery Inquiry</h2>
+          <h2 className="text-2xl font-extrabold font-display text-vibrant-charcoal">Bookings</h2>
           <p className="text-xs text-stone-400 leading-relaxed font-semibold">Please state your therapeutic comfort goals so staff can configure agreements.</p>
         </div>
 
