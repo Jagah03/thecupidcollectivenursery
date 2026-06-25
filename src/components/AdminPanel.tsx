@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   KeyRound, ShieldAlert, Sparkles, Building, Briefcase, Users, HelpCircle, 
-  Settings, Mail, FileDown, PlusCircle, Trash2, Check, RefreshCw, Layers, Phone, Eye, EyeOff, Save, CheckCircle
+  Settings, Mail, MailOpen, FileDown, PlusCircle, Trash2, Check, RefreshCw, Layers, Phone, Eye, EyeOff, Save, CheckCircle
 } from "lucide-react";
 import { DBStore, GlobalSettings, NurseryGuidelines, NurseryPackage, Caregiver, BlogArticle, SafetyAlert, MentalHealthResource, FAQItem, Testimonial, Inquiry } from "../types";
 
@@ -1432,36 +1432,31 @@ export default function AdminPanel() {
                         inq.read ? "border-stone-100 opacity-75" : "border-pink-200 outline-2 outline-pink-50"
                       }`}
                     >
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-stone-850">{inq.name}</h4>
-                            <span className="text-[10px] font-mono bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">{inq.pronouns}</span>
-                            {!inq.read && <span className="bg-rose-500 text-white font-bold text-[8px] font-mono uppercase px-2 py-0.5 rounded-full">New</span>}
-                          </div>
-                          <p className="text-xs text-stone-450 font-mono">Email: <a href={`mailto:${inq.email}`} className="text-indigo-500 underline hover:text-indigo-600">{inq.email}</a></p>
-                          <p className="text-xs text-stone-500 mt-1 font-semibold leading-relaxed">Fantasy: <span className="text-stone-800">{inq.fantasy}</span></p>
-                          <p className="text-xs text-stone-500 mt-1 font-semibold leading-relaxed">Special Request: <span className="text-stone-800">{inq.specialRequest}</span></p>
-                        </div>
-                        <div className="text-right space-y-1 shrink-0">
-                          <span className="text-[10px] font-mono text-stone-400 block">{new Date(inq.date).toLocaleString()}</span>
-<button
-                              onClick={() => togglePrivateRead(inq.id, inq.read)}
-                              className={`px-3 py-1 text-[10px] font-semibold rounded-lg border transition ${
-                                inq.read ? "bg-stone-50 text-stone-500 hover:bg-stone-100" : "bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100"
-                              }`}
-                            >
-                              Mark {inq.read ? "Unread" : "Archived / Read"}
-                            </button>
-                            <button
-                              onClick={() => handleDeletePrivate(inq.id)}
-                              className="ml-2 text-red-600 hover:text-red-800"
-                              title="Delete this inquiry"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                        </div>
-                      </div>
+<div className="space-y-2">
+                      <h4 className="text-sm font-bold text-stone-850">{inq.name}</h4>
+                      <span className="text-[10px] font-mono bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">{inq.pronouns}</span>
+                      {!inq.read && <span className="bg-rose-500 text-white font-bold text-[8px] font-mono uppercase px-2 py-0.5 rounded-full">New</span>}
+                      <p className="text-xs text-stone-450 font-mono">Email: <a href={`mailto:${inq.email}`} className="text-indigo-500 underline hover:text-indigo-600">{inq.email}</a></p>
+                      <p className="text-xs text-stone-500 font-semibold leading-relaxed">Fantasy: <span className="text-stone-800">{inq.fantasy}</span></p>
+                      <p className="text-xs text-stone-500 font-semibold leading-relaxed">Special Request: <span className="text-stone-800">{inq.specialRequest}</span></p>
+                      <p className="text-[10px] font-mono text-stone-400">{new Date(inq.date).toLocaleString()}</p>
+                    </div>
+                    <div className="flex justify-center items-center mt-2 space-x-4">
+                      <button
+                        onClick={() => togglePrivateRead(inq.id, inq.read)}
+                        className="p-2 rounded-full hover:bg-stone-100 transition-colors"
+                        title={inq.read ? "Mark as Unread" : "Mark as Read"}
+                      >
+                        {inq.read ? <Mail size={20} className="text-emerald-600" /> : <MailOpen size={20} className="text-rose-600" />}
+                      </button>
+                      <button
+                        onClick={() => handleDeletePrivate(inq.id)}
+                        className="p-2 rounded-full hover:bg-rose-50 transition-colors"
+                        title="Delete this private inquiry"
+                      >
+                        <Trash2 size={20} className="text-rose-600" />
+                      </button>
+                    </div>
                     </div>
                   ))}
                 </div>
