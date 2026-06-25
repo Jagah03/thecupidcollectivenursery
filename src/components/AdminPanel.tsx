@@ -409,6 +409,8 @@ export default function AdminPanel() {
 
   // INQUIRY READ TOGGLE
   const toggleInquiryRead = async (id: string, currentRead: boolean) => {
+  // Existing toggle for public inquiries
+
     if (!token) return;
     try {
       const res = await fetch(`/api/admin/inquiries/${id}/read`, {
@@ -421,6 +423,22 @@ export default function AdminPanel() {
       }
     } catch (err) {
       showStatus("error", "Error setting read tag.");
+    }
+  };
+
+  const togglePrivateRead = async (id: string, currentRead: boolean) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`/api/admin/private-inquiries/${id}/read`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": token },
+        body: JSON.stringify({ read: !currentRead })
+      });
+      if ((await res.json()).success) {
+        fetchAdminData();
+      }
+    } catch (err) {
+      showStatus("error", "Error setting private read tag.");
     }
   };
 
@@ -1376,17 +1394,17 @@ export default function AdminPanel() {
             <div className="space-y-6">
               <div className="flex justify-between items-center bg-stone-50 -mx-6 md:-mx-8 -mt-6 md:-mt-8 p-5 rounded-t-3xl border-b border-stone-100">
                 <div>
-                  <h3 className="text-lg font-bold font-display text-stone-850">Client Inquiry Logs</h3>
-                  <p className="text-xs text-stone-450 mt-0.5">Read private booking proposals, pronouns, targets, and notes submitted.</p>
+                  <h3 className="text-lg font-bold font-display text-stone-850">Private Inquiry Logs</h3>
+                  <p className="text-xs text-stone-450 mt-0.5">Read private booking proposals, pronouns, fantasies, and special requests submitted.</p>
                 </div>
                 <span className="bg-rose-100 text-rose-500 font-bold px-3 py-1 rounded-full text-xs font-mono shrink-0">
-                  Total: {db.inquiries?.length || 0} Entries
+                  Total: {db.privateInquiries?.length || 0} Entries
                 </span>
               </div>
 
-              {db.inquiries && db.inquiries.length > 0 ? (
+              {db.privateInquiries && db.privateInquiries.length > 0 ? (
                 <div className="space-y-6">
-                  {db.inquiries.map(inq => (
+                  {db.privateInquiries.map(inq => (
                     <div
                       key={inq.id}
                       id={`inquiry-log-item-${inq.id}`}
@@ -1402,12 +1420,13 @@ export default function AdminPanel() {
                             {!inq.read && <span className="bg-rose-500 text-white font-bold text-[8px] font-mono uppercase px-2 py-0.5 rounded-full">New</span>}
                           </div>
                           <p className="text-xs text-stone-450 font-mono">Email: <a href={`mailto:${inq.email}`} className="text-indigo-500 underline hover:text-indigo-600">{inq.email}</a></p>
-                          <p className="text-xs text-stone-500 mt-1 font-semibold leading-relaxed">Subject: <span className="text-stone-800">{inq.subject}</span></p>
+                          <p className="text-xs text-stone-500 mt-1 font-semibold leading-relaxed">Fantasy: <span className="text-stone-800">{inq.fantasy}</span></p>
+                          <p className="text-xs text-stone-500 mt-1 font-semibold leading-relaxed">Special Request: <span className="text-stone-800">{inq.specialRequest}</span></p>
                         </div>
                         <div className="text-right space-y-1 shrink-0">
                           <span className="text-[10px] font-mono text-stone-400 block">{new Date(inq.date).toLocaleString()}</span>
                           <button
-                            onClick={() => toggleInquiryRead(inq.id, inq.read)}
+                            onClick={() => togglePrivateRead(inq.id, inq.read)}
                             className={`px-3 py-1 text-[10px] font-semibold rounded-lg border transition ${
                               inq.read ? "bg-stone-50 text-stone-500 hover:bg-stone-100" : "bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100"
                             }`}
@@ -1416,16 +1435,12 @@ export default function AdminPanel() {
                           </button>
                         </div>
                       </div>
-
-                      <div className="bg-stone-50 p-4 rounded-xl border text-xs text-stone-650 leading-relaxed font-sans whitespace-pre-wrap">
-                        {inq.message}
-                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-stone-400 text-xs text-center py-12 bg-stone-50 rounded-2xl border border-dashed">
-                  No submissions recorded yet. Make inquiries using the public contact portal.
+                  No private inquiries recorded yet.
                 </div>
               )}
             </div>
