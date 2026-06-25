@@ -269,8 +269,7 @@ export default function App() {
                 )}
 
                 {activeTab === "contact" && (
-                  <ContactForm
-                    initialSubject={selectedPackageSubject}
+                  <PrivateInquiryForm
                     onSuccess={() => setSelectedPackageSubject("")}
                   />
                 )}
