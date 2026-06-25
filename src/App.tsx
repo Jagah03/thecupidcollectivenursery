@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Baby, Home, Layers, CalendarHeart, Sparkles, RefreshCw, LogOut, ShieldCheck, Heart, Moon, Sun } from "lucide-react";
+import { Baby, Home, Layers, CalendarHeart, Sparkles, RefreshCw, LogOut, ShieldCheck, Heart, Moon, Sun, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import { DBStore } from "./types";
@@ -36,6 +36,9 @@ export default function App() {
   const [selectedPackageSubject, setSelectedPackageSubject] = useState("");
   // New tab for booking page
   const [bookingSubject, setBookingSubject] = useState("");
+  // Hamburger menu state for mobile
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = React.useRef<HTMLDivElement>(null);
 
   // Clean navigation helper that updates browser address bar path
   const navigateToTab = (tabName: string) => {
@@ -69,6 +72,17 @@ export default function App() {
     window.addEventListener("popstate", handleLocationCheck);
     return () => window.removeEventListener("popstate", handleLocationCheck);
   }, []);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuOpen && menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   const loadPublicData = async () => {
     setLoading(true);
@@ -148,19 +162,26 @@ export default function App() {
                   onClick={() => navigateToTab("home")}
                   className="flex items-center gap-2.5 cursor-pointer select-none group"
                 >
-                  <div className="w-10 h-10 bg-vibrant-gold rounded-full flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <div className="w-6 h-6 bg-white rounded-full opacity-70 flex items-center justify-center">
+                  <div className="w-6 h-6 md:w-10 md:h-10 bg-vibrant-gold rounded-full flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <div className="w-4 h-4 md:w-6 md:h-6 bg-white rounded-full opacity-70 flex items-center justify-center">
                       <Baby size={13} className="text-vibrant-charcoal" />
                     </div>
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-lg font-extrabold tracking-tight text-vibrant-charcoal block font-display">
+                    <span className="text-sm md:text-lg font-extrabold tracking-tight text-vibrant-charcoal block font-display">
                       The Cupid <span className="text-vibrant-pink bg-vibrant-charcoal px-2 py-0.5 rounded-lg text-sm font-bold">Collective</span>
                     </span>
-                    <span className="text-[9px] uppercase tracking-widest font-mono font-bold text-vibrant-gold-text block leading-none">
+                    <span className="text-[7px] md:text-[9px] uppercase tracking-widest font-mono font-bold text-vibrant-gold-text block leading-none">
                       Therapeutic Nursery
-                    </span>
-                  </div>
+</span>
+                  <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className="md:hidden p-2 rounded-full hover:bg-vibrant-pink/40 transition-colors"
+                    aria-label="Toggle mobile menu"
+                  >
+                    <Menu size={20} className="text-vibrant-charcoal" />
+                  </button>
+                </div>
                 </div>
                 <nav id="desktop-routing-links" className="hidden md:flex items-center gap-6">
                   {[
@@ -215,12 +236,34 @@ export default function App() {
                   {isDark ? <Sun size={16} className="text-vibrant-gold-text" /> : <Moon size={16} className="text-vibrant-charcoal" />}
                 </button>
                 <div className="h-4 w-px bg-stone-200 mx-1" />
-                <span className="text-[10px] font-bold px-2.5 py-1 bg-vibrant-blue rounded text-vibrant-blue-text select-none uppercase tracking-wide">
+                <span className="text-[7px] md:text-[10px] font-bold px-1.5 md:px-2.5 py-0.5 md:py-1 bg-vibrant-blue rounded text-vibrant-blue-text select-none uppercase tracking-wide">
                   18+ CERTIFIED
                 </span>
               </div>
             </div>
           </header>
+
+{/* Mobile navigation dropdown */}
+{menuOpen && (
+  <div ref={menuRef} className="md:hidden absolute top-20 left-0 w-full bg-vibrant-bg border-b border-vibrant-pink/30 shadow-md z-40">
+    <nav className="flex flex-col">
+      {[{ id: "home", label: "Home", icon: Home },{ id: "sessions", label: "The Nursery", icon: Sparkles },{ id: "resources", label: "Resources", icon: Layers },{ id: "contact", label: "Contact", icon: CalendarHeart }].map(tab => (
+        <button
+          key={tab.id}
+          onClick={() => {
+            navigateToTab(tab.id);
+            setMenuOpen(false);
+            if (tab.id !== "contact") setSelectedPackageSubject("");
+          }}
+          className={`flex items-center gap-2 px-4 py-3 text-left text-sm font-bold uppercase tracking-wider border-b border-transparent hover:border-vibrant-gold ${activeTab===tab.id ? "text-vibrant-dark font-extrabold" : "text-stone-500"}`}
+        >
+          <tab.icon size={16} className={activeTab===tab.id ? "text-vibrant-charcoal" : "text-stone-400"} />
+          {tab.label}
+        </button>
+      ))}
+    </nav>
+  </div>
+)}
 
           {errorState && (
             <div className="bg-amber-50 border-b border-amber-100 py-3 text-center px-4">
