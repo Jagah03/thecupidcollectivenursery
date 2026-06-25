@@ -119,14 +119,19 @@ export default function NurseryView({ guidelines, packages, caregivers, onBookPa
             <div className="border-t border-vibrant-blue-border/40 pt-5 mt-5">
               {renderSimpleMarkdown(guidelines?.rules)}
             </div>
-            <div className="border-t border-vibrant-blue-border/40 pt-5 mt-5">
-              {renderSimpleMarkdown(guidelines?.expectations)}
-            </div>
           </div>
         </div>
-      </section>
 
-      {/* Packages Section */}
+</section>
+
+        {/* What to Expect standalone section */}
+        <section id="what-to-expect-section" className="mt-12 bg-vibrant-bg rounded-[32px] p-8 border-4 border-vibrant-pink shadow-xs">
+          <div className="space-y-4 text-vibrant-blue-text font-medium text-sm">
+            {renderSimpleMarkdown(guidelines?.expectations)}
+          </div>
+        </section>
+
+        {/* Packages Section */}
       <section id="packages-sessions" className="space-y-12">
         <div className="text-center space-y-1.5">
           <h2 className="text-2xl md:text-3xl font-extrabold text-vibrant-charcoal font-display">Service Packages & Pricing</h2>
