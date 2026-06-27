@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Baby, Home, Layers, CalendarHeart, Sparkles, RefreshCw, LogOut, ShieldCheck, Heart, Moon, Sun, Menu } from "lucide-react";
+import { Baby, Home, Layers, CalendarHeart, Sparkles, RefreshCw, LogOut, ShieldCheck, Heart, Moon, Sun, Menu, User } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 import { DBStore } from "./types";
@@ -241,7 +241,7 @@ if (path === "admin") {
                   })}
                 </nav>
                 {!user && (
-                  <a href="/login" className="ml-4 text-sm font-bold uppercase tracking-wider text-stone-700 hover:text-vibrant-dark">Login</a>
+                  <a href="/login" className="ml-4"><User size={16} className="text-stone-700 hover:text-vibrant-dark" /></a>
                 )}
                 {user && (
                   <>
@@ -291,7 +291,7 @@ if (path === "admin") {
           </button>
         ))}
         {!user && (
-          <a href="/login" className="px-4 py-3 text-sm font-bold uppercase tracking-wider text-stone-700 hover:bg-vibrant-pink/30 hover:text-vibrant-dark">Login</a>
+          <a href="/login" className="px-4 py-3"><User size={16} className="text-stone-700 hover:text-vibrant-dark" /></a>
         )}
         {user && (
           <>
