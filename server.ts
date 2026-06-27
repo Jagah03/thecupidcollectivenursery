@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import path from "path";
+import { promises as fs } from "fs";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { DBStore, GlobalSettings, NurseryGuidelines, NurseryPackage, Caregiver, BlogArticle, SafetyAlert, MentalHealthResource, FAQItem, Testimonial, Inquiry } from "./src/types";
@@ -255,6 +256,7 @@ async function writeDBToSupabaseOnly(data: DBStore) {
 // Lazy-initialized asynchronous global readDB helper
 async function readDB(): Promise<DBStore> {
   const supabase = getSupabase();
+  // Try Supabase first
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -265,9 +267,14 @@ async function readDB(): Promise<DBStore> {
 
       if (error) {
         console.warn("Supabase query warning:", error.message);
-        return getDefaultDB();
+        // fall through to fallback
       } else if (data && data.data) {
-        return data.data as DBStore;
+        const db = data.data as DBStore;
+        // Ensure arrays exist for older versions
+        if (!Array.isArray(db.privateInquiries)) db.privateInquiries = [];
+        if (!Array.isArray(db.inquiries)) db.inquiries = [];
+        if (!Array.isArray(db.registeredUsers)) db.registeredUsers = [];
+        return db;
       } else {
         console.log("Supabase row 'cupid_db_store' not found. Initializing with default db configuration...");
         const defaultData = getDefaultDB();
@@ -278,20 +285,39 @@ async function readDB(): Promise<DBStore> {
       console.error("Supabase failover read exception:", err.message || err);
     }
   }
-  return getDefaultDB();
+  // Fallback to local file
+  try {
+    const filePath = path.resolve(process.cwd(), "local_db.json");
+    const raw = await fs.readFile(filePath, "utf-8");
+    const parsed = JSON.parse(raw) as DBStore;
+    if (!Array.isArray(parsed.privateInquiries)) parsed.privateInquiries = [];
+    if (!Array.isArray(parsed.inquiries)) parsed.inquiries = [];
+    if (!Array.isArray(parsed.registeredUsers)) parsed.registeredUsers = [];
+    return parsed;
+  } catch (e) {
+    return getDefaultDB();
+  }
 }
 
 // Lazy-initialized asynchronous global writeDB helper
 async function writeDB(data: DBStore) {
   const supabase = getSupabase();
+  // Try Supabase first
   if (supabase) {
     try {
       await writeDBToSupabaseOnly(data);
+      return;
     } catch (err: any) {
       console.error("Supabase failover write exception:", err.message || err);
     }
-  } else {
-    console.warn("Supabase is not initialized. Cannot persist writeDB.");
+  }
+  // Fallback to local JSON file
+  try {
+    const filePath = path.resolve(process.cwd(), "local_db.json");
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
+    console.log("Local DB write succeeded.");
+  } catch (e) {
+    console.error("Failed to write local DB fallback:", e);
   }
 }
 

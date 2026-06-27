@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express from "express";
+import { promises as fs } from "fs";
+import path from "path";
 import { createClient } from "@supabase/supabase-js";
 
 const app = express();
@@ -354,6 +356,7 @@ async function writeDBToSupabase(data: DBStore) {
 
 async function readDB(): Promise<DBStore> {
     const supabase = getSupabase();
+    // 1️⃣ Try Supabase first
     if (supabase) {
         try {
             const { data, error } = await supabase
@@ -363,15 +366,15 @@ async function readDB(): Promise<DBStore> {
                 .maybeSingle();
             if (error) {
                 console.warn("Supabase query warning:", error.message);
-                return getDefaultDB();
-} else if (data && data.data) {
-                  // Ensure new collections exist for older DB versions
-                  const db = data.data as DBStore;
-if (!Array.isArray(db.privateInquiries)) db.privateInquiries = [];
-                   if (!Array.isArray(db.inquiries)) db.inquiries = [];
-                   if (!Array.isArray(db.registeredUsers)) db.registeredUsers = [];
-                  return db;
-                } else {
+                // fall through to fallback storage
+            } else if (data && data.data) {
+                const db = data.data as DBStore;
+                // Ensure new collections exist for older DB versions
+                if (!Array.isArray(db.privateInquiries)) db.privateInquiries = [];
+                if (!Array.isArray(db.inquiries)) db.inquiries = [];
+                if (!Array.isArray(db.registeredUsers)) db.registeredUsers = [];
+                return db;
+            } else {
                 console.log("Supabase row 'cupid_db_store' not found. Initializing with default db configuration...");
                 const defaultData = getDefaultDB();
                 await writeDBToSupabase(defaultData);
@@ -381,19 +384,40 @@ if (!Array.isArray(db.privateInquiries)) db.privateInquiries = [];
             console.error("Supabase read exception:", err.message || err);
         }
     }
-    return getDefaultDB();
+    // 2️⃣ Local file fallback
+    try {
+        const filePath = path.resolve(process.cwd(), "local_db.json");
+        const raw = await fs.readFile(filePath, "utf-8");
+        const parsed = JSON.parse(raw) as DBStore;
+        // Ensure arrays exist
+        if (!Array.isArray(parsed.privateInquiries)) parsed.privateInquiries = [];
+        if (!Array.isArray(parsed.inquiries)) parsed.inquiries = [];
+        if (!Array.isArray(parsed.registeredUsers)) parsed.registeredUsers = [];
+        return parsed;
+    } catch (e) {
+        // If file missing or parse error, start with defaults
+        return getDefaultDB();
+    }
 }
 
 async function writeDB(data: DBStore) {
     const supabase = getSupabase();
+    // 1️⃣ If Supabase client exists, try to persist there
     if (supabase) {
         try {
             await writeDBToSupabase(data);
+            return;
         } catch (err: any) {
             console.error("Supabase write exception:", err.message);
         }
-    } else {
-        console.error("writeDB: Supabase client not initialized. Check SUPABASE_SERVICE_ROLE_KEY env var.");
+    }
+    // 2️⃣ Fallback to local JSON file
+    try {
+        const filePath = path.resolve(process.cwd(), "local_db.json");
+        await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
+        console.log("Local DB write succeeded.");
+    } catch (e) {
+        console.error("Failed to write local DB fallback:", e);
     }
 }
 
