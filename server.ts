@@ -5,7 +5,10 @@ import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { DBStore, GlobalSettings, NurseryGuidelines, NurseryPackage, Caregiver, BlogArticle, SafetyAlert, MentalHealthResource, FAQItem, Testimonial, Inquiry } from "./src/types";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+let stripe: any = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+}
 
 const app = express();
 const PORT = 3000;
@@ -413,6 +416,9 @@ app.post("/api/create-checkout-session", async (req, res) => {
       ? origin
       : "https://thecupidcollectivenursery.me";
 
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",

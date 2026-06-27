@@ -3,10 +3,15 @@ import { supabase } from "../supabaseClient";
 
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    pronouns: "",
+    age: "",
+    goals: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -17,9 +22,15 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
+    const { name, pronouns, age, goals, email, password, confirmPassword } = formData;
     // client validation
-    if (!name || !email || !password || !confirmPassword) {
-      setError("All fields are required.");
+    if (!name || !age || !goals || !email || !password || !confirmPassword) {
+      setError("All required fields must be completed.");
+      return;
+    }
+    const ageNum = Number(age);
+    if (isNaN(ageNum) || ageNum < 18) {
+      setError("Age must be a number 18 or older.");
       return;
     }
     const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -39,7 +50,14 @@ export default function RegisterPage() {
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } },
+      options: {
+        data: {
+          full_name: name,
+          pronouns,
+          age: ageNum,
+          goals
+        }
+      }
     });
     if (signUpError) {
       setError(signUpError.message);
@@ -71,32 +89,73 @@ export default function RegisterPage() {
           </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name / Alias */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">Full Name *</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">Name or Alias *</label>
             <input
               type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
+              value={formData.name}
+              onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="e.g., Coby (Little Coby)"
               className="w-full rounded-xl bg-vibrant-bg border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium focus:outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold"
               required
             />
           </div>
+          {/* Pronouns */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">Pronouns</label>
+            <input
+              type="text"
+              value={formData.pronouns}
+              onChange={e => setFormData(prev => ({ ...prev, pronouns: e.target.value }))}
+              placeholder="e.g., He / Him"
+              className="w-full rounded-xl bg-vibrant-bg border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium focus:outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold"
+            />
+          </div>
+          {/* Age */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">Age *</label>
+            <input
+              type="number"
+              value={formData.age}
+              onChange={e => setFormData(prev => ({ ...prev, age: e.target.value }))}
+              placeholder="Must be 18 or older"
+              min={18}
+              className="w-full rounded-xl bg-vibrant-bg border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium focus:outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold"
+              required
+            />
+          </div>
+          {/* Goals */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">Goals *</label>
+            <textarea
+              value={formData.goals}
+              onChange={e => setFormData(prev => ({ ...prev, goals: e.target.value }))}
+              placeholder="What are you hoping to experience or achieve through the nursery?"
+              rows={3}
+              className="w-full rounded-xl bg-vibrant-bg border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium focus:outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold"
+              required
+            />
+          </div>
+          {/* Email */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">Email Address *</label>
             <input
               type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="e.g., mail@example.com"
               className="w-full rounded-xl bg-vibrant-bg border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium focus:outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold"
               required
             />
           </div>
+          {/* Password */}
           <div className="relative">
             <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">Password *</label>
             <input
               type={showPwd ? "text" : "password"}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
               className="w-full rounded-xl bg-vibrant-bg border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium focus:outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold"
               required
             />
@@ -108,12 +167,13 @@ export default function RegisterPage() {
               {showPwd ? "Hide" : "Show"}
             </button>
           </div>
+          {/* Confirm Password */}
           <div className="relative">
             <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 mb-1">Confirm Password *</label>
             <input
               type={showConfirmPwd ? "text" : "password"}
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
+              value={formData.confirmPassword}
+              onChange={e => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
               className="w-full rounded-xl bg-vibrant-bg border border-stone-200 px-4 py-2.5 text-xs text-stone-800 font-medium focus:outline-none focus:bg-white focus:ring-1 focus:ring-vibrant-gold"
               required
             />
