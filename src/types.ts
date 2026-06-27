@@ -107,6 +107,18 @@ export interface MailingListEntry {
   date: string;
 }
 
+// New interface for registered users
+export interface RegisteredUser {
+  id: string;
+  name: string;
+  pronouns: string;
+  age: string;
+  goals: string;
+  email: string;
+  date: string;
+  read: boolean;
+}
+
 // Full State representation
 export interface DBStore {
   globalSettings: GlobalSettings;
@@ -120,5 +132,6 @@ export interface DBStore {
   testimonials: Testimonial[];
   inquiries: Inquiry[];
   privateInquiries: PrivateInquiry[];
+  registeredUsers: RegisteredUser[];
   mailingList: MailingListEntry[];
 }

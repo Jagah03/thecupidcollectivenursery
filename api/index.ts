@@ -103,6 +103,18 @@ interface PrivateInquiry {
   read: boolean;
 }
 
+// New interface for registered users
+export interface RegisteredUser {
+  id: string;
+  name: string;
+  pronouns: string;
+  age: string;
+  goals: string;
+  email: string;
+  date: string;
+  read: boolean;
+}
+
 interface DBStore {
   globalSettings: GlobalSettings;
   nurseryGuidelines: NurseryGuidelines;
@@ -115,6 +127,7 @@ interface DBStore {
   testimonials: Testimonial[];
   inquiries: Inquiry[];
   privateInquiries: PrivateInquiry[];
+  registeredUsers: RegisteredUser[];
   mailingList: Array<{ email: string; date: string }>;
 }
 
@@ -354,8 +367,9 @@ async function readDB(): Promise<DBStore> {
 } else if (data && data.data) {
                   // Ensure new collections exist for older DB versions
                   const db = data.data as DBStore;
-                  if (!Array.isArray(db.privateInquiries)) db.privateInquiries = [];
-                  if (!Array.isArray(db.inquiries)) db.inquiries = [];
+if (!Array.isArray(db.privateInquiries)) db.privateInquiries = [];
+                   if (!Array.isArray(db.inquiries)) db.inquiries = [];
+                   if (!Array.isArray(db.registeredUsers)) db.registeredUsers = [];
                   return db;
                 } else {
                 console.log("Supabase row 'cupid_db_store' not found. Initializing with default db configuration...");
@@ -443,6 +457,34 @@ app.post("/api/inquiries", async (req, res) => {
     } catch (e: any) {
         res.status(500).json({ success: false, error: e.message });
     }
+});
+
+// Register user endpoint
+app.post("/api/register-user", async (req, res) => {
+  try {
+    const { name, pronouns, age, goals, email } = req.body;
+    if (!name || !email) {
+      return res.status(400).json({ success: false, error: "Missing required fields." });
+    }
+    const db = await readDB();
+    if (!Array.isArray(db.registeredUsers)) {
+      db.registeredUsers = [];
+    }
+    db.registeredUsers.push({
+      id: "usr-" + Date.now(),
+      name: String(name).slice(0, 100),
+      pronouns: String(pronouns || "Not specified").slice(0, 50),
+      age: String(age || "").slice(0, 10),
+      goals: String(goals || "").slice(0, 1000),
+      email: String(email).slice(0, 100),
+      date: new Date().toISOString(),
+      read: false
+    });
+    await writeDB(db);
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
 });
 
 // Private Inquiry (no payment)
@@ -805,6 +847,22 @@ app.post("/api/admin/private-inquiries/:id/read", adminAuthGate, async (req, res
       return res.json({ success: true });
     }
     res.status(404).json({ success: false, error: "Private inquiry not found." });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// Toggle read flag for registered users
+app.post("/api/admin/registered-users/:id/read", adminAuthGate, async (req, res) => {
+  try {
+    const db = await readDB();
+    const index = db.registeredUsers.findIndex(u => u.id === req.params.id);
+    if (index >= 0) {
+      db.registeredUsers[index].read = !!req.body.read;
+      await writeDB(db);
+      return res.json({ success: true });
+    }
+    res.status(404).json({ success: false, error: "User not found." });
   } catch (e: any) {
     res.status(500).json({ success: false, error: e.message });
   }

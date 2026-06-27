@@ -63,6 +63,22 @@ export default function RegisterPage() {
       setError(signUpError.message);
     } else {
       setSuccess("Check your email to confirm your account before logging in.");
+      // Fire‑and‑forget registration data capture
+      try {
+        fetch("/api/register-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.name,
+            pronouns: formData.pronouns,
+            age: formData.age,
+            goals: formData.goals,
+            email: formData.email
+          })
+        });
+      } catch (e) {
+        console.error("Failed to log registration:", e);
+      }
     }
     setLoading(false);
   };
