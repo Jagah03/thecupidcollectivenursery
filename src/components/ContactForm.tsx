@@ -88,7 +88,7 @@ export default function ContactForm({ initialSubject, onSuccess }: ContactFormPr
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-vibrant-pink text-white shadow-xs">
           <Info size={20} />
         </div>
-        <h3 className="text-xl font-extrabold text-vibrant-charcoal font-display">Booking</h3
+        <h3 className="text-xl font-extrabold text-vibrant-charcoal font-display">Booking</h3>
 
         <div className="space-y-4 text-xs text-stone-600 leading-relaxed font-sans font-medium">
           <div className="flex gap-2">
