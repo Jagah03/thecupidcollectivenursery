@@ -17,6 +17,10 @@ import PrivateInquiryForm from "./components/PrivateInquiryForm";
 import AdminPanel from "./components/AdminPanel";
 import BookingView from "./components/BookingView";
 import { useTheme } from "./contexts/ThemeContext";
+import { useAuth } from "./contexts/AuthContext";
+import RegisterPage from "./components/RegisterPage";
+import LoginPage from "./components/LoginPage";
+import Dashboard from "./components/Dashboard";
 
 export default function App() {
   const { isDark, toggle } = useTheme();
@@ -39,6 +43,7 @@ export default function App() {
   // Hamburger menu state for mobile
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
+  const { user, loading: authLoading, signOut } = useAuth();
 
   // Clean navigation helper that updates browser address bar path
   const navigateToTab = (tabName: string) => {
@@ -53,25 +58,38 @@ export default function App() {
   useEffect(() => {
     const handleLocationCheck = () => {
       const path = window.location.pathname.replace(/^\//, "");
-      if (path === "admin") {
-        setActiveTab("admin");
-      } else if (path === "sessions" || path.startsWith("nursery")) {
-        setActiveTab("sessions");
-      } else if (path === "contact") {
-        setActiveTab("contact");
-      } else if (path.startsWith("resources")) {
-        setActiveTab("resources");
-      } else if (path === "bookings") {
-        setActiveTab("bookings");
-      } else {
-        setActiveTab("home");
-      }
+if (path === "admin") {
+            setActiveTab("admin");
+          } else if (path === "login") {
+            setActiveTab("login");
+          } else if (path === "register") {
+            setActiveTab("register");
+          } else if (path === "dashboard") {
+            setActiveTab("dashboard");
+          } else if (path === "sessions" || path.startsWith("nursery")) {
+            setActiveTab("sessions");
+          } else if (path === "contact") {
+            setActiveTab("contact");
+          } else if (path.startsWith("resources")) {
+            setActiveTab("resources");
+          } else if (path === "bookings") {
+            setActiveTab("bookings");
+          } else {
+            setActiveTab("home");
+          }
     };
 
     handleLocationCheck();
     window.addEventListener("popstate", handleLocationCheck);
     return () => window.removeEventListener("popstate", handleLocationCheck);
   }, []);
+
+  // Redirect authenticated users away from login/register pages
+  useEffect(() => {
+    if (!authLoading && user && (activeTab === "login" || activeTab === "register")) {
+      navigateToTab("dashboard");
+    }
+  }, [user, authLoading, activeTab]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -149,7 +167,7 @@ export default function App() {
   ];
 
   return (
-    <div id="application-root" className="min-h-screen flex flex-col bg-vibrant-bg text-[#4A4A4A] antialiased font-sans transition-colors selection:bg-vibrant-pink/40 selection:text-vibrant-charcoal">
+      <div id="application-root" className="min-h-screen flex flex-col bg-vibrant-bg text-[#4A4A4A] antialiased font-sans transition-colors selection:bg-vibrant-pink/40 selection:text-vibrant-charcoal">
       <AgeGate onVerify={() => setIsAgeVerified(true)} />
 
       {isAgeVerified && (
@@ -214,13 +232,23 @@ export default function App() {
                                   {r.label}
                                 </a>
                               ))}
-                            </div>
+</div>
+
                           </div>
                         )}
                       </div>
                     );
                   })}
                 </nav>
+                {!user && (
+                  <a href="/login" className="ml-4 text-sm font-bold uppercase tracking-wider text-stone-700 hover:text-vibrant-dark">Login</a>
+                )}
+                {user && (
+                  <>
+                    <a href="/dashboard" className="ml-4 text-sm font-bold uppercase tracking-wider text-stone-700 hover:text-vibrant-dark">Dashboard</a>
+                    <button onClick={signOut} className="ml-4 text-sm font-bold uppercase tracking-wider text-rose-600 hover:text-rose-800">Sign Out</button>
+                  </>
+                )}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={toggle}
@@ -259,10 +287,19 @@ export default function App() {
           className={`flex items-center gap-2 px-4 py-3 text-left text-sm font-bold uppercase tracking-wider border-b border-transparent hover:border-vibrant-gold ${activeTab===tab.id ? "text-vibrant-dark font-extrabold" : "text-stone-500"}`}
         >
           <tab.icon size={16} className={activeTab===tab.id ? "text-vibrant-charcoal" : "text-stone-400"} />
-          {tab.label}
-        </button>
-      ))}
-    </nav>
+        {tab.label}
+          </button>
+        ))}
+        {!user && (
+          <a href="/login" className="px-4 py-3 text-sm font-bold uppercase tracking-wider text-stone-700 hover:bg-vibrant-pink/30 hover:text-vibrant-dark">Login</a>
+        )}
+        {user && (
+          <>
+            <a href="/dashboard" className="px-4 py-3 text-sm font-bold uppercase tracking-wider text-stone-700 hover:bg-vibrant-pink/30 hover:text-vibrant-dark">Dashboard</a>
+            <button onClick={signOut} className="px-4 py-3 text-sm font-bold uppercase tracking-wider text-rose-600 hover:text-rose-800">Sign Out</button>
+          </>
+        )}
+      </nav>
   </div>
 )}
 
@@ -324,7 +361,9 @@ export default function App() {
                     onSuccess={() => setBookingSubject("")}
                   />
                 )}
-
+                {activeTab === "login" && <LoginPage />}
+                {activeTab === "register" && <RegisterPage />}
+                {activeTab === "dashboard" && <Dashboard />}
                 {activeTab === "admin" && (
                   <AdminPanel />
                 )}
