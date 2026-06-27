@@ -2,6 +2,23 @@ import React, { useState } from "react";
 import { supabase } from "../supabaseClient";
 
 
+const getFriendlyError = (message: string): string => {
+  const msg = message.toLowerCase();
+  if (msg.includes("rate limit") || msg.includes("email rate limit")) {
+    return "We're receiving a lot of sign‑ups right now. Please wait a few minutes and try again.";
+  }
+  if (msg.includes("user already registered") || msg.includes("already been registered")) {
+    return "An account with this email already exists. Please log in instead.";
+  }
+  if (msg.includes("invalid email")) {
+    return "Please enter a valid email address.";
+  }
+  if (msg.includes("password")) {
+    return "Your password must be at least 8 characters long.";
+  }
+  return "Something went wrong during registration. Please try again shortly.";
+};
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -60,7 +77,7 @@ export default function RegisterPage() {
       }
     });
     if (signUpError) {
-      setError(signUpError.message);
+      setError(getFriendlyError(signUpError.message || ""));
     } else {
       setSuccess("Check your email to confirm your account before logging in.");
       // Fire‑and‑forget registration data capture
