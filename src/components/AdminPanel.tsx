@@ -1588,57 +1588,6 @@ export default function AdminPanel() {
                               <b>Verified Test Record Write-back:</b>
                               <pre className="mt-1 whitespace-pre-wrap">{JSON.stringify(supabaseTestResult.testRecordInfo, null, 2)}</pre>
             </div>
-
-          {/* TAB X: REGISTERED USERS */}
-          {activeSubTab === "users" && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center bg-stone-50 -mx-6 md:-mx-8 -mt-6 md:-mt-8 p-5 rounded-t-3xl border-b border-stone-100">
-                <div>
-                  <h3 className="text-lg font-bold font-display text-stone-850 dark:text-white">Registered Users</h3>
-                  <p className="text-xs text-stone-450 mt-0.5 dark:text-stone-300">All users who have registered on the platform.</p>
-                </div>
-                <span className="bg-rose-100 text-rose-500 font-bold px-3 py-1 rounded-full text-xs font-mono shrink-0">
-                  Total: {db.registeredUsers?.length || 0} Entries
-                </span>
-              </div>
-
-              {db.registeredUsers && db.registeredUsers.length > 0 ? (
-                <div className="space-y-6">
-                  {db.registeredUsers.map(user => (
-                    <div
-                      key={user.id}
-                      className={`w-full border rounded-2xl p-5 space-y-4 relative overflow-hidden bg-white shadow-sm transition-all ${
-                        user.read ? "border-stone-100 opacity-75" : "border-pink-200 outline-2 outline-pink-50"
-                      }`}
-                    >
-                      <div className="space-y-2">
-                        <h4 className="text-sm font-bold text-stone-850 dark:text-white">{user.name}</h4>
-                        <span className="text-[10px] font-mono bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">{user.pronouns}</span>
-                        {!user.read && <span className="bg-rose-500 text-white font-bold text-[8px] font-mono uppercase px-2 py-0.5 rounded-full">New</span>}
-                        <span className="text-[10px] text-stone-400 bg-stone-100 px-2 py-0.5 rounded ml-2">{user.age} years</span>
-                        <p className="text-xs text-stone-450 font-mono dark:text-stone-300">Email: <a href={`mailto:${user.email}`} className="text-indigo-500 underline hover:text-indigo-600">{user.email}</a></p>
-                        <div className="bg-stone-50 rounded-xl p-2 text-xs text-stone-800">{user.goals}</div>
-                        <p className="text-[10px] font-mono text-stone-400">{new Date(user.date).toLocaleString()}</p>
-                      </div>
-                      <div className="flex justify-center items-center mt-2 space-x-4">
-                        <button
-                          onClick={() => toggleUserRead(user.id, user.read)}
-                          className="p-2 rounded-full hover:bg-stone-100 transition-colors"
-                          title={user.read ? "Mark as Unread" : "Mark as Read"}
-                        >
-                          {user.read ? <Mail size={20} className="text-emerald-600" /> : <MailOpen size={20} className="text-rose-600" />}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-stone-400 text-xs text-center py-12 bg-stone-50 rounded-2xl border border-dashed">
-                  No registered users yet.
-                </div>
-              )}
-            </div>
-          )}
                           )}
                         </div>
                       )}
@@ -1656,7 +1605,57 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* Mailing List Export Tools */}
+              {/* TAB X: REGISTERED USERS */}
+{activeSubTab === "users" && (
+  <div className="space-y-6">
+    <div className="flex justify-between items-center bg-stone-50 -mx-6 md:-mx-8 -mt-6 md:-mt-8 p-5 rounded-t-3xl border-b border-stone-100">
+      <div>
+        <h3 className="text-lg font-bold font-display text-stone-850 dark:text-white">Registered Users</h3>
+        <p className="text-xs text-stone-450 mt-0.5 dark:text-stone-300">All users who have registered on the platform.</p>
+      </div>
+      <span className="bg-rose-100 text-rose-500 font-bold px-3 py-1 rounded-full text-xs font-mono shrink-0">
+        Total: {db.registeredUsers?.length || 0} Entries
+      </span>
+    </div>
+
+    {db.registeredUsers && db.registeredUsers.length > 0 ? (
+      <div className="space-y-6">
+        {db.registeredUsers.map(user => (
+          <div
+            key={user.id}
+            className={`w-full border rounded-2xl p-5 space-y-4 relative overflow-hidden bg-white shadow-sm transition-all ${
+              user.read ? "border-stone-100 opacity-75" : "border-pink-200 outline-2 outline-pink-50"
+            }`}
+          >
+            <div className="space-y-2">
+              <h4 className="text-sm font-bold text-stone-850 dark:text-white">{user.name}</h4>
+              <span className="text-[10px] font-mono bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">{user.pronouns}</span>
+              {!user.read && <span className="bg-rose-500 text-white font-bold text-[8px] font-mono uppercase px-2 py-0.5 rounded-full">New</span>}
+              <span className="text-[10px] text-stone-400 bg-stone-100 px-2 py-0.5 rounded ml-2">{user.age} years</span>
+              <p className="text-xs text-stone-450 font-mono dark:text-stone-300">Email: <a href={`mailto:${user.email}`} className="text-indigo-500 underline hover:text-indigo-600">{user.email}</a></p>
+              <div className="bg-stone-50 rounded-xl p-2 text-xs text-stone-800">{user.goals}</div>
+              <p className="text-[10px] font-mono text-stone-400">{new Date(user.date).toLocaleString()}</p>
+            </div>
+            <div className="flex justify-center items-center mt-2 space-x-4">
+              <button
+                onClick={() => toggleUserRead(user.id, user.read)}
+                className="p-2 rounded-full hover:bg-stone-100 transition-colors"
+                title={user.read ? "Mark as Unread" : "Mark as Read"}
+              >
+                {user.read ? <Mail size={20} className="text-emerald-600" /> : <MailOpen size={20} className="text-rose-600" />}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="text-stone-400 text-xs text-center py-12 bg-stone-50 rounded-2xl border border-dashed">
+        No registered users yet.
+      </div>
+    )}
+  </div>
+)}
+{/* Mailing List Export Tools */}
               <div className="border-t border-stone-100 pt-8 space-y-4">
                 <div>
                   <h3 className="text-md font-bold text-stone-800 font-display">Newsletter & Mailing List Exporter</h3>
