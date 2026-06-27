@@ -124,16 +124,26 @@ if (path === "admin") {
     loadPublicData();
   }, []);
 
-  const handleBookPackage = (packageSubject: string) => {
-    // Store subject for form pre‑population
-    setBookingSubject(packageSubject);
-    // Navigate to the new bookings page
-    navigateToTab("bookings");
-    // Reset selectedPackageSubject to avoid stale state
-    setSelectedPackageSubject("");
-    // Scroll to top of the booking page
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+const handleBookPackage = (packageSubject: string) => {
+  // If the user isn’t authenticated, send them to login first
+  if (!user) {
+    navigateToTab("login");
+    return;
+  }
+  // If the user is not a registered user, redirect to dashboard
+  if (!isRegisteredUser) {
+    navigateToTab("dashboard");
+    return;
+  }
+  // Store subject for form pre‑population
+  setBookingSubject(packageSubject);
+  // Navigate to the new bookings page
+  navigateToTab("bookings");
+  // Reset selectedPackageSubject to avoid stale state
+  setSelectedPackageSubject("");
+  // Scroll to top of the booking page
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
 
   const getFallbackSettings = () => ({
     introHeadline: "A Safe, Nurturing Sanctuary for Age-Regression",
@@ -164,7 +174,9 @@ if (path === "admin") {
     { id: "hotlines", label: "Crisis Hotlines", href: "/resources/hotlines" },
     { id: "articles", label: "Guides & Logs", href: "/resources/articles" },
     { id: "faqs", label: "FAQs Accordion", href: "/resources/faqs" }
-  ];
+];
+
+  const isRegisteredUser = !!user && !!dbData?.registeredUsers?.some(u => u.email === user.email);
 
   return (
       <div id="application-root" className="min-h-screen flex flex-col bg-vibrant-bg text-[#4A4A4A] antialiased font-sans transition-colors selection:bg-vibrant-pink/40 selection:text-vibrant-charcoal">
@@ -356,14 +368,20 @@ if (path === "admin") {
                 )}
 
                 {activeTab === "bookings" && (
-                  <BookingView
-                    subject={bookingSubject}
-                    onSuccess={() => setBookingSubject("")}
-                  />
+                  user && isRegisteredUser ? (
+                    <BookingView
+                      subject={bookingSubject}
+                      onSuccess={() => setBookingSubject("")}
+                    />
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-stone-600">Please log in to access the booking page.</p>
+                    </div>
+                  )
                 )}
                 {activeTab === "login" && <LoginPage />}
                 {activeTab === "register" && <RegisterPage />}
-                {activeTab === "dashboard" && <Dashboard />}
+                {activeTab === "dashboard" && <Dashboard onStartBooking={() => handleBookPackage("")} />}
                 {activeTab === "admin" && (
                   <AdminPanel />
                 )}

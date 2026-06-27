@@ -1,7 +1,7 @@
 import React from "react";
 import { useAuth } from "../contexts/AuthContext";
 
-export default function Dashboard() {
+export default function Dashboard({ onStartBooking }: { onStartBooking: () => void }) {
   const { user } = useAuth();
   return (
     <div className="flex items-center justify-center py-12 px-4">
@@ -12,6 +12,9 @@ export default function Dashboard() {
         <p className="text-stone-600 dark:text-stone-300">
           Welcome, {user?.email ?? "User"}!
         </p>
+        <button onClick={onStartBooking} className="mt-4 rounded-xl bg-rose-400 hover:bg-rose-500 text-white font-bold px-4 py-2">
+          Book a Session
+        </button>
         {/* Add dashboard content here */}
       </div>
     </div>
