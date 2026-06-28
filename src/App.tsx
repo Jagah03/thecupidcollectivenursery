@@ -130,11 +130,7 @@ const handleBookPackage = (packageSubject: string) => {
     navigateToTab("login");
     return;
   }
-  // If the user is not a registered user, redirect to dashboard
-  if (!isRegisteredUser) {
-    navigateToTab("dashboard");
-    return;
-  }
+  // No additional registration check needed here – authenticated users can proceed to booking
   // Store subject for form pre‑population
   setBookingSubject(packageSubject);
   // Navigate to the new bookings page
@@ -368,7 +364,7 @@ const handleBookPackage = (packageSubject: string) => {
                 )}
 
                 {activeTab === "bookings" && (
-                  user && isRegisteredUser ? (
+                  user ? (
                     <BookingView
                       subject={bookingSubject}
                       onSuccess={() => setBookingSubject("")}
