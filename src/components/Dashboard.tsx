@@ -10,7 +10,7 @@ export default function Dashboard({ onStartBooking }: { onStartBooking: () => vo
           Dashboard
         </h2>
         <p className="text-stone-600 dark:text-stone-300">
-          Welcome, {user?.email ?? "User"}!
+          Welcome, {user?.user_metadata?.full_name ?? user?.email ?? "User"}!
         </p>
         <button onClick={onStartBooking} className="mt-4 rounded-xl bg-rose-400 hover:bg-rose-500 text-white font-bold px-4 py-2">
           Book a Session
