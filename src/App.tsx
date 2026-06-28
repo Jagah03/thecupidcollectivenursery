@@ -304,6 +304,13 @@ const handleBookPackage = (packageSubject: string) => {
         {user && (
           <>
             <a href="/dashboard" className="px-4 py-3 text-sm font-bold uppercase tracking-wider text-stone-700 hover:bg-vibrant-pink/30 hover:text-vibrant-dark">Dashboard</a>
+                <button
+                  onClick={signOut}
+                  className="ml-4 p-1 rounded-full hover:bg-rose-100"
+                  aria-label="Sign out"
+                >
+                  <LogOut size={16} className="text-rose-600 hover:text-rose-800" />
+                </button>
             
           </>
         )}
