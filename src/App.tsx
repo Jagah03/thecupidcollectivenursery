@@ -254,7 +254,7 @@ const handleBookPackage = (packageSubject: string) => {
                 {user && (
                   <>
                     <a href="/dashboard" className="ml-4 text-sm font-bold uppercase tracking-wider text-stone-700 hover:text-vibrant-dark">Dashboard</a>
-                    <button onClick={signOut} className="ml-4 text-sm font-bold uppercase tracking-wider text-rose-600 hover:text-rose-800">Sign Out</button>
+                    
                   </>
                 )}
                 <div className="flex items-center gap-2">
@@ -304,7 +304,7 @@ const handleBookPackage = (packageSubject: string) => {
         {user && (
           <>
             <a href="/dashboard" className="px-4 py-3 text-sm font-bold uppercase tracking-wider text-stone-700 hover:bg-vibrant-pink/30 hover:text-vibrant-dark">Dashboard</a>
-            <button onClick={signOut} className="px-4 py-3 text-sm font-bold uppercase tracking-wider text-rose-600 hover:text-rose-800">Sign Out</button>
+            
           </>
         )}
       </nav>
