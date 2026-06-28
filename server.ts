@@ -222,6 +222,8 @@ function getDefaultDB(): DBStore {
         role: "Nursery Session regular"
       }
     ],
+    privateInquiries: [],
+    registeredUsers: [],
     inquiries: [],
     mailingList: []
   };

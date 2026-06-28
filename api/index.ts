@@ -341,6 +341,7 @@ function getDefaultDB(): DBStore {
         ],
         inquiries: [],
         privateInquiries: [],
+        registeredUsers: [],
         mailingList: []
     };
 }
