@@ -284,7 +284,7 @@ const handleBookPackage = (packageSubject: string) => {
 {menuOpen && (
   <div ref={menuRef} className="md:hidden absolute top-20 left-0 w-full bg-vibrant-bg border-b border-vibrant-pink/30 shadow-md z-40">
     <nav className="flex flex-col">
-      {[{ id: "home", label: "Home", icon: Home },{ id: "sessions", label: "The Nursery", icon: Sparkles },{ id: "resources", label: "Resources", icon: Layers },{ id: "contact", label: "Contact", icon: CalendarHeart }].map(tab => (
+      {(user ? [{ id: "home", label: "Home", icon: Home },{ id: "resources", label: "Resources", icon: Layers }] : [{ id: "home", label: "Home", icon: Home },{ id: "sessions", label: "The Nursery", icon: Sparkles },{ id: "resources", label: "Resources", icon: Layers },{ id: "contact", label: "Contact", icon: CalendarHeart }]).map(tab => (
         <button
           key={tab.id}
           onClick={() => {
@@ -302,17 +302,13 @@ const handleBookPackage = (packageSubject: string) => {
           <a href="/login" className="px-4 py-3"><User size={16} className="text-stone-700 hover:text-vibrant-dark" /></a>
         )}
         {user && (
-          <>
-            <a href="/dashboard" className="px-4 py-3 text-sm font-bold uppercase tracking-wider text-stone-700 hover:bg-vibrant-pink/30 hover:text-vibrant-dark">Dashboard</a>
-                <button
-                  onClick={signOut}
-                  className="ml-4 p-1 rounded-full hover:bg-rose-100"
-                  aria-label="Sign out"
-                >
-                  <LogOut size={16} className="text-rose-600 hover:text-rose-800" />
-                </button>
-            
-          </>
+          <button
+            onClick={signOut}
+            className="ml-4 p-1 rounded-full hover:bg-rose-100"
+            aria-label="Sign out"
+          >
+            <LogOut size={16} className="text-rose-600 hover:text-rose-800" />
+          </button>
         )}
       </nav>
   </div>
