@@ -381,7 +381,7 @@ const handleBookPackage = (packageSubject: string) => {
                 )}
                 {activeTab === "login" && <LoginPage />}
                 {activeTab === "register" && <RegisterPage />}
-                {activeTab === "dashboard" && <Dashboard onStartBooking={() => handleBookPackage("")} />}
+                {activeTab === "dashboard" && <Dashboard onStartBooking={() => navigateToTab("sessions")} />}
                 {activeTab === "admin" && (
                   <AdminPanel />
                 )}
